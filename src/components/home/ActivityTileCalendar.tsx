@@ -2,7 +2,6 @@
 
 import { useState, useMemo } from "react";
 import { type Activity } from "@/types/activity";
-import { cn } from "@/lib/utils";
 
 type ActivityTileCalendarProps = {
   activities: Activity[];
@@ -13,13 +12,13 @@ const REFERENCE_DATE = new Date("2026-04-01");
 
 const DAY_LABELS = ["日", "月", "火", "水", "木", "金", "土"] as const;
 
-/** 1日の投稿数に応じた 5 段階カラークラスを返す */
-const getColorClass = (count: number): string => {
-  if (count === 0) return "bg-zinc-800";
-  if (count === 1) return "bg-green-200";
-  if (count <= 3) return "bg-green-400";
-  if (count <= 5) return "bg-green-500";
-  return "bg-green-700";
+/** 1日の投稿数に応じた 5 段階カラーを返す（MF amber scale） */
+const getColorStyle = (count: number): string => {
+  if (count === 0) return "var(--mf-surface-tint)";
+  if (count === 1) return "rgba(212,146,42,0.25)";
+  if (count <= 3) return "rgba(212,146,42,0.50)";
+  if (count <= 5) return "rgba(212,146,42,0.75)";
+  return "var(--mf-accent)";
 };
 
 /** Date を "yyyy-MM-dd" キーへ変換 */
@@ -110,23 +109,39 @@ const ActivityTileCalendar = ({ activities }: ActivityTileCalendarProps) => {
     setSelectedWeekIdx((prev) => (prev === wIdx ? null : wIdx));
   };
 
+  const LEGEND_COUNTS = [0, 1, 2, 4, 6];
+
   return (
-    <section className="px-4">
-      <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-zinc-500">
+    <section>
+      <h2
+        style={{
+          fontSize: 10.5,
+          fontWeight: 700,
+          letterSpacing: 0.6,
+          textTransform: "uppercase",
+          color: "var(--mf-text-muted)",
+          marginBottom: 10,
+        }}
+      >
         振り返り
       </h2>
 
       {/* カレンダー本体（横スクロール） */}
-      <div className="overflow-x-auto rounded-xl bg-zinc-800/40 p-3 pb-4">
+      <div
+        className="overflow-x-auto mf-scroll"
+        style={{
+          borderRadius: 12,
+          background: "var(--mf-bg-paper)",
+          border: "0.5px solid var(--mf-line)",
+          padding: "10px 12px 12px",
+        }}
+      >
         {/* 月ラベル行 */}
         <div className="flex gap-[2px] mb-1 pl-[26px]">
           {weeks.map((_, wIdx) => (
-            <div
-              key={wIdx}
-              className="flex-shrink-0 w-[13px]"
-            >
+            <div key={wIdx} style={{ flexShrink: 0, width: 13 }}>
               {monthLabels[wIdx] && (
-                <span className="text-[9px] leading-none text-zinc-500">
+                <span style={{ fontSize: 9, lineHeight: 1, color: "var(--mf-text-muted)" }}>
                   {monthLabels[wIdx]}
                 </span>
               )}
@@ -135,16 +150,16 @@ const ActivityTileCalendar = ({ activities }: ActivityTileCalendarProps) => {
         </div>
 
         {/* 曜日ラベル + セルグリッド */}
-        <div className="flex items-start gap-[6px]">
-          {/* 曜日ラベル（月・水・金 のみ表示） */}
-          <div className="flex flex-col flex-shrink-0 gap-[2px]">
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 6 }}>
+          {/* 曜日ラベル */}
+          <div style={{ display: "flex", flexDirection: "column", flexShrink: 0, gap: 2 }}>
             {DAY_LABELS.map((label, i) => (
               <div
                 key={i}
-                className="w-[18px] h-[11px] flex items-center justify-end"
+                style={{ width: 18, height: 11, display: "flex", alignItems: "center", justifyContent: "flex-end" }}
               >
                 {(i === 1 || i === 3 || i === 5) && (
-                  <span className="text-[9px] leading-none text-zinc-500">
+                  <span style={{ fontSize: 9, lineHeight: 1, color: "var(--mf-text-muted)" }}>
                     {label}
                   </span>
                 )}
@@ -153,7 +168,7 @@ const ActivityTileCalendar = ({ activities }: ActivityTileCalendarProps) => {
           </div>
 
           {/* 週 × 日 のセル群 */}
-          <div className="flex gap-[2px]">
+          <div style={{ display: "flex", gap: 2 }}>
             {weeks.map((week, wIdx) => {
               const isSelected = selectedWeekIdx === wIdx;
               return (
@@ -162,19 +177,29 @@ const ActivityTileCalendar = ({ activities }: ActivityTileCalendarProps) => {
                   type="button"
                   aria-label={`${toDateKey(week.startDate)} の週`}
                   onClick={() => handleWeekClick(wIdx)}
-                  className="flex flex-col flex-shrink-0 gap-[2px] w-[11px] focus:outline-none"
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    flexShrink: 0,
+                    gap: 2,
+                    width: 11,
+                    background: "none",
+                    border: "none",
+                    padding: 0,
+                    cursor: "pointer",
+                  }}
                 >
                   {week.days.map((day) => (
                     <div
                       key={day.key}
                       title={`${day.key}: ${day.count}件`}
-                      className={cn(
-                        "w-[11px] h-[11px] rounded-sm transition-all",
-                        getColorClass(day.count),
-                        isSelected
-                          ? "ring-1 ring-violet-400 ring-offset-1 ring-offset-zinc-900"
-                          : "hover:brightness-110",
-                      )}
+                      style={{
+                        width: 11,
+                        height: 11,
+                        borderRadius: 2,
+                        background: getColorStyle(day.count),
+                        boxShadow: isSelected ? `0 0 0 1px var(--mf-accent), 0 0 0 2px var(--mf-bg-paper)` : "none",
+                      }}
                     />
                   ))}
                 </button>
@@ -184,44 +209,68 @@ const ActivityTileCalendar = ({ activities }: ActivityTileCalendarProps) => {
         </div>
 
         {/* 凡例 */}
-        <div className="flex items-center justify-end gap-[3px] mt-2.5">
-          <span className="text-[9px] text-zinc-500 mr-1">少</span>
-          {(["bg-zinc-800", "bg-green-200", "bg-green-400", "bg-green-500", "bg-green-700"] as const).map(
-            (cls, i) => (
-              <div
-                key={i}
-                className={cn("w-[11px] h-[11px] rounded-sm", cls)}
-              />
-            ),
-          )}
-          <span className="text-[9px] text-zinc-500 ml-1">多</span>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 3, marginTop: 8 }}>
+          <span style={{ fontSize: 9, color: "var(--mf-text-muted)", marginRight: 2 }}>少</span>
+          {LEGEND_COUNTS.map((count, i) => (
+            <div
+              key={i}
+              style={{ width: 11, height: 11, borderRadius: 2, background: getColorStyle(count) }}
+            />
+          ))}
+          <span style={{ fontSize: 9, color: "var(--mf-text-muted)", marginLeft: 2 }}>多</span>
         </div>
       </div>
 
       {/* 選択週のアクティビティ一覧 */}
       {selectedWeekIdx !== null && (
-        <div className="mt-4">
-          <p className="mb-2 text-xs text-zinc-500">
-            {toDateKey(weeks[selectedWeekIdx].startDate).replace(/-/g, "/")}{" "}
-            〜{" "}
+        <div style={{ marginTop: 14 }}>
+          <p style={{ fontSize: 11.5, color: "var(--mf-text-muted)", marginBottom: 8 }}>
+            {toDateKey(weeks[selectedWeekIdx].startDate).replace(/-/g, "/")}
+            {" 〜 "}
             {toDateKey(weeks[selectedWeekIdx].endDate).replace(/-/g, "/")}
             の記録
           </p>
           {selectedWeekActivities.length === 0 ? (
-            <p className="rounded-xl bg-zinc-800/40 p-4 text-center text-sm text-zinc-500">
+            <p
+              style={{
+                borderRadius: 12,
+                padding: "14px",
+                textAlign: "center",
+                fontSize: 13,
+                color: "var(--mf-text-muted)",
+                background: "var(--mf-bg-paper)",
+                border: "0.5px solid var(--mf-line)",
+              }}
+            >
               この週には記録がありません
             </p>
           ) : (
-            <ul className="flex flex-col gap-2">
+            <ul style={{ display: "flex", flexDirection: "column", gap: 6, listStyle: "none", padding: 0, margin: 0 }}>
               {selectedWeekActivities.map((act) => (
                 <li
                   key={act.id}
-                  className="rounded-xl bg-zinc-800/60 p-3 text-sm"
+                  style={{
+                    borderRadius: 10,
+                    background: "var(--mf-surface-card)",
+                    border: "0.5px solid var(--mf-line)",
+                    padding: "10px 12px",
+                    fontSize: 13,
+                  }}
                 >
-                  <p className="mb-1 text-xs text-zinc-500">
+                  <p style={{ fontSize: 11, color: "var(--mf-text-muted)", marginBottom: 4 }}>
                     {isoToDateKey(act.createdAt).replace(/-/g, "/")}
                   </p>
-                  <p className="line-clamp-3 leading-relaxed text-zinc-200">
+                  <p
+                    style={{
+                      lineHeight: 1.6,
+                      color: "var(--mf-ink)",
+                      overflow: "hidden",
+                      display: "-webkit-box",
+                      WebkitLineClamp: 3,
+                      WebkitBoxOrient: "vertical",
+                      margin: 0,
+                    }}
+                  >
                     {act.body}
                   </p>
                 </li>

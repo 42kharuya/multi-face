@@ -1,51 +1,76 @@
 "use client";
 
 import { useState } from "react";
-import { Pencil } from "lucide-react";
 import { usePathname } from "next/navigation";
 import PostModal from "@/components/ui/PostModal";
 
-type TopBarProps = {
-  pageTitle?: string;
-};
-
 const PAGE_TITLES: Record<string, string> = {
-  "/": "ホーム",
-  "/faces": "フェイス",
+  "/": "書く",
+  "/faces": "振り返り",
+  "/subscriptions": "蒐集",
   "/notifications": "通知",
   "/search": "検索",
-  "/subscriptions": "サブスク",
 };
 
-/**
- * TopBar（グローバル上部バー）
- * PC 表示時に SideNav の右側、MainColumn・DetailPanel の上部に共通表示される。
- */
-const TopBar = ({ pageTitle }: TopBarProps) => {
+const TopBar = () => {
   const pathname = usePathname();
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
 
   const handleOpen = () => setIsPostModalOpen(true);
   const handleClose = () => setIsPostModalOpen(false);
-  const resolvedPageTitle =
-    pageTitle ??
+
+  const title =
     PAGE_TITLES[pathname] ??
     (pathname.startsWith("/faces/") ? "フェイス詳細" : "MultiFace");
 
   return (
     <>
-      <header className="hidden md:flex items-center justify-between sticky top-0 z-10 h-12 border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-sm px-4">
-        {/* 左側: 現在のページ名 */}
-        <span className="text-sm font-semibold text-zinc-400">{resolvedPageTitle}</span>
+      <header
+        className="hidden md:flex items-center justify-between sticky top-0 z-10"
+        style={{
+          height: 64,
+          padding: "0 28px",
+          borderBottom: "0.5px solid var(--mf-line)",
+          background: "rgba(248,246,241,0.85)",
+          backdropFilter: "blur(10px)",
+        }}
+      >
+        <div>
+          <div
+            style={{
+              fontSize: 19,
+              fontWeight: 700,
+              color: "var(--mf-brand)",
+              letterSpacing: -0.2,
+            }}
+          >
+            {title}
+          </div>
+        </div>
 
-        {/* 右側: 投稿ボタン */}
         <button
           type="button"
           onClick={handleOpen}
-          className="flex items-center gap-2 rounded-full bg-violet-600 px-4 py-1.5 text-sm font-semibold text-white shadow-md shadow-violet-900/40 hover:bg-violet-500 active:scale-95 active:bg-violet-700 transition-all"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            padding: "8px 22px",
+            borderRadius: 999,
+            background: "var(--mf-accent)",
+            color: "#fff",
+            fontSize: 13.5,
+            fontWeight: 700,
+            border: "none",
+            cursor: "pointer",
+            boxShadow: "0 4px 14px rgba(212,146,42,0.25)",
+          }}
         >
-          <Pencil size={16} strokeWidth={2.5} />
-          投稿する
+          <svg width={14} height={14} viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 17l1-3.5L13 4.5l3.5 3.5L7.5 17H3z" />
+            <path d="M12 5.5l3.5 3.5" />
+          </svg>
+          投稿
         </button>
       </header>
 

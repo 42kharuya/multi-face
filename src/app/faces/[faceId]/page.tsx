@@ -2,8 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { faceRepository } from "@/repositories/face-repository";
 import { userRepository } from "@/repositories/user-repository";
-import FaceHeader from "@/components/face/FaceHeader";
-import FaceActivityFeed from "@/components/face/FaceActivityFeed";
+import FaceDetailClient from "@/components/face/FaceDetailClient";
 import FAB from "@/components/ui/FAB";
 
 type Props = {
@@ -23,45 +22,65 @@ const FaceDetailPage = async ({ params }: Props) => {
   return (
     <div className="flex flex-col">
       {/* スティッキーヘッダー */}
-      <header className="sticky top-0 z-10 flex items-center gap-2 border-b border-zinc-800 bg-zinc-950/80 px-4 py-3 backdrop-blur-sm">
+      <header
+        className="sticky top-0 z-10 flex items-center gap-3"
+        style={{
+          height: 52,
+          padding: "0 18px",
+          background: "var(--mf-bg-light)",
+          borderBottom: "0.5px solid var(--mf-line)",
+        }}
+      >
         <Link
           href="/faces"
-          className="flex items-center justify-center rounded-full p-1 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-100"
+          style={{
+            width: 34,
+            height: 34,
+            borderRadius: "50%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "var(--mf-brand)",
+            textDecoration: "none",
+          }}
           aria-label="フェイス一覧に戻る"
         >
-          {/* 左矢印アイコン */}
           <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
+            width={20}
+            height={20}
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
-            strokeWidth="2"
+            strokeWidth={2}
             strokeLinecap="round"
             strokeLinejoin="round"
           >
             <path d="M15 18l-6-6 6-6" />
           </svg>
         </Link>
-        <h2 className="truncate text-base font-bold text-zinc-100">
+        <h2
+          style={{
+            flex: 1,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            fontSize: 16,
+            fontWeight: 700,
+            color: "var(--mf-brand)",
+            margin: 0,
+          }}
+        >
           {face.emoji ? `${face.emoji} ${face.name}` : face.name}
         </h2>
       </header>
 
       <main>
-        {/* フェイスヘッダー（絵文字・名前・説明・サブスクボタン） */}
-        <div className="border-b border-zinc-800">
-          <FaceHeader face={face} isOwner={face.userId === currentUser.id} />
-        </div>
-
-        {/* アクティビティ一覧 */}
-        <section className="px-4 py-4">
-          <FaceActivityFeed face={face} />
-        </section>
+        <FaceDetailClient
+          face={face}
+          isOwner={face.userId === currentUser.id}
+        />
       </main>
 
-      {/* 自分のフェイスのみ投稿FABを表示 */}
       {face.userId === currentUser.id && (
         <FAB defaultFaceId={face.id} />
       )}
