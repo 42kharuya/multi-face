@@ -11,6 +11,7 @@ import { formatRelativeTime } from "@/lib/format-relative-time";
 type SeedRowProps = {
   activity: Activity;
   face: Face;
+  handle?: string;
   onClick?: () => void;
   replyChain?: boolean;
   showActions?: boolean;
@@ -22,6 +23,7 @@ const COLLAPSE_THRESHOLD = 200;
 const SeedRow = ({
   activity,
   face,
+  handle,
   onClick,
   replyChain = false,
   showActions = false,
@@ -90,7 +92,7 @@ const SeedRow = ({
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 6,
+            gap: 5,
             marginBottom: 4,
             whiteSpace: "nowrap",
             overflow: "hidden",
@@ -104,16 +106,46 @@ const SeedRow = ({
               color: "var(--mf-brand)",
               overflow: "hidden",
               textOverflow: "ellipsis",
+              flexShrink: 1,
             }}
           >
             {getFaceTitle(face)}
           </span>
-          <span style={{ fontSize: 12.5, color: "var(--mf-text-muted)" }}>
+          {handle && (
+            <span style={{ fontSize: 12, color: "var(--mf-text-muted)", flexShrink: 0 }}>
+              @{handle}
+            </span>
+          )}
+          <span style={{ fontSize: 12.5, color: "var(--mf-text-muted)", flexShrink: 0 }}>
             ·
           </span>
-          <span style={{ fontSize: 12.5, color: "var(--mf-text-muted)" }}>
+          <span style={{ fontSize: 12.5, color: "var(--mf-text-muted)", flexShrink: 0 }}>
             {formatRelativeTime(activity.createdAt)}
           </span>
+          <button
+            type="button"
+            onClick={(e) => e.stopPropagation()}
+            aria-label="その他"
+            style={{
+              marginLeft: "auto",
+              flexShrink: 0,
+              width: 24,
+              height: 24,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              borderRadius: "50%",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              color: "var(--mf-text-muted)",
+              fontSize: 15,
+              letterSpacing: 1,
+              lineHeight: 1,
+            }}
+          >
+            ···
+          </button>
         </div>
 
         {/* 本文 */}
