@@ -33,7 +33,10 @@ const PostModal = ({ isOpen, onClose, defaultFaceId }: Props) => {
   const [selectedFaceId, setSelectedFaceId] = useState<string>(initialSelectedFaceId);
   const [text, setText] = useState("");
   const [images, setImages] = useState<AttachedImage[]>([]);
+  const [showFacePicker, setShowFacePicker] = useState(false);
+  const [visibility, setVisibility] = useState<"public" | "private">("public");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const selectedFace = myFaces.find((f) => f.id === selectedFaceId);
 
@@ -45,6 +48,9 @@ const PostModal = ({ isOpen, onClose, defaultFaceId }: Props) => {
       });
       setText("");
       setSelectedFaceId(initialSelectedFaceId);
+      setShowFacePicker(false);
+    } else {
+      setTimeout(() => textareaRef.current?.focus(), 100);
     }
   }, [initialSelectedFaceId, isOpen]);
 
@@ -75,236 +81,358 @@ const PostModal = ({ isOpen, onClose, defaultFaceId }: Props) => {
 
   if (!isOpen) return null;
 
-  return (
-    <>
-      {/* オーバーレイ */}
-      <div
-        style={{
-          position: "fixed",
-          inset: 0,
-          zIndex: 50,
-          background: "rgba(20,24,36,0.5)",
-          backdropFilter: "blur(4px)",
-        }}
-        onClick={onClose}
-        aria-hidden="true"
-      />
+  const canPost = text.trim().length > 0;
 
-      {/* モーダルパネル */}
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="投稿"
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 60,
+        background: "var(--mf-bg-light)",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      {/* トップバー */}
       <div
-        role="dialog"
-        aria-modal="true"
-        aria-label="投稿"
         style={{
-          position: "fixed",
-          left: "50%",
-          top: "50%",
-          zIndex: 50,
-          width: "calc(100% - 2rem)",
-          maxWidth: 480,
-          transform: "translate(-50%, -50%)",
-          borderRadius: 20,
-          background: "var(--mf-surface)",
-          border: "0.5px solid var(--mf-line)",
-          boxShadow: "0 20px 60px rgba(30,42,74,0.15)",
+          height: 52,
+          padding: "0 14px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          borderBottom: "0.5px solid var(--mf-line)",
+          flexShrink: 0,
         }}
       >
-        {/* ヘッダー */}
-        <div
+        <button
+          type="button"
+          onClick={onClose}
           style={{
             display: "flex",
             alignItems: "center",
-            justifyContent: "space-between",
-            padding: "16px 18px 14px",
-            borderBottom: "0.5px solid var(--mf-line)",
+            gap: 5,
+            fontSize: 14,
+            color: "var(--mf-text-sub)",
+            fontWeight: 500,
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            padding: "6px 4px",
           }}
         >
-          <h2 style={{ fontSize: 15, fontWeight: 700, color: "var(--mf-brand)", margin: 0 }}>
-            新しいシードを書く
-          </h2>
+          <svg width={20} height={20} viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round">
+            <path d="M5 5l10 10M15 5L5 15" />
+          </svg>
+          キャンセル
+        </button>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {/* 公開設定 */}
           <button
             type="button"
-            onClick={onClose}
+            onClick={() => setVisibility(v => v === "public" ? "private" : "public")}
             style={{
-              width: 28, height: 28,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              borderRadius: "50%", border: "none", background: "transparent",
-              color: "var(--mf-text-muted)", cursor: "pointer",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 4,
+              padding: "6px 10px",
+              background: "var(--mf-surface-tint)",
+              borderRadius: 999,
+              fontSize: 11.5,
+              color: "var(--mf-text-sub)",
+              fontWeight: 600,
+              border: "none",
+              cursor: "pointer",
             }}
-            aria-label="閉じる"
           >
-            <svg width={16} height={16} viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round">
-              <path d="M5 5l10 10M15 5L5 15" />
-            </svg>
+            {visibility === "public" ? (
+              <>
+                <svg width={12} height={12} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round">
+                  <circle cx={8} cy={8} r={6} />
+                  <path d="M2.5 8c0-1 1-3 5.5-3s5.5 2 5.5 3-1 3-5.5 3S2.5 9 2.5 8z" />
+                  <circle cx={8} cy={8} r={2} fill="currentColor" />
+                </svg>
+                公開
+              </>
+            ) : (
+              <>
+                <svg width={12} height={12} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round">
+                  <rect x={4} y={7} width={8} height={7} rx={1.5} />
+                  <path d="M5.5 7V5a2.5 2.5 0 015 0v2" />
+                </svg>
+                非公開
+              </>
+            )}
           </button>
-        </div>
-
-        <div style={{ padding: "16px 18px 20px", display: "flex", flexDirection: "column", gap: 14 }}>
-          {/* フェイス選択 */}
-          <div>
-            <label
-              htmlFor="face-select"
-              style={{ fontSize: 11.5, fontWeight: 600, color: "var(--mf-text-muted)", display: "block", marginBottom: 6 }}
-            >
-              フェイス
-            </label>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px 8px 8px", borderRadius: 12, border: "0.5px solid var(--mf-line)", background: "var(--mf-bg-paper)" }}>
-              {selectedFace && <FaceBadge face={selectedFace} size={28} radius={7} />}
-              <select
-                id="face-select"
-                value={selectedFaceId}
-                onChange={(e) => setSelectedFaceId(e.target.value)}
-                style={{
-                  flex: 1,
-                  appearance: "none",
-                  border: "none",
-                  background: "transparent",
-                  fontSize: 13.5,
-                  fontWeight: 700,
-                  color: "var(--mf-brand)",
-                  outline: "none",
-                  cursor: "pointer",
-                }}
-              >
-                {myFaces.map((face) => (
-                  <option key={face.id} value={face.id}>
-                    {getFaceTitle(face)}
-                  </option>
-                ))}
-              </select>
-            </div>
-            {selectedFace?.description && (
-              <p style={{ fontSize: 11.5, color: "var(--mf-text-muted)", margin: "6px 0 0", lineHeight: 1.5 }}>
-                {selectedFace.description}
-              </p>
-            )}
-          </div>
-
-          {/* テキストエリア */}
-          <div>
-            <textarea
-              id="post-text"
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              maxLength={MAX_LENGTH}
-              rows={5}
-              placeholder="気軽に書き留めてみましょう…"
-              style={{
-                width: "100%",
-                resize: "none",
-                borderRadius: 12,
-                border: "0.5px solid var(--mf-line)",
-                background: "var(--mf-bg-paper)",
-                padding: "12px 14px",
-                fontSize: 14,
-                lineHeight: 1.75,
-                color: "var(--mf-ink)",
-                outline: "none",
-                fontFamily: "var(--mf-font-sans)",
-                boxSizing: "border-box",
-              }}
-            />
-            <p style={{ textAlign: "right", fontSize: 11, color: "var(--mf-text-muted)", margin: "4px 0 0" }}>
-              {text.length} / {MAX_LENGTH.toLocaleString()}
-            </p>
-          </div>
-
-          {/* 画像添付 */}
-          <div>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              multiple
-              style={{ display: "none" }}
-              onChange={handleFileChange}
-            />
-            <button
-              type="button"
-              disabled={images.length >= MAX_IMAGES}
-              onClick={() => fileInputRef.current?.click()}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-                padding: "7px 14px",
-                borderRadius: 999,
-                border: "0.5px solid var(--mf-line)",
-                background: "transparent",
-                fontSize: 12.5,
-                fontWeight: 600,
-                color: images.length >= MAX_IMAGES ? "var(--mf-text-faint)" : "var(--mf-text-sub)",
-                cursor: images.length >= MAX_IMAGES ? "not-allowed" : "pointer",
-              }}
-            >
-              <svg width={15} height={15} viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
-                <rect x={3} y={3} width={14} height={14} rx={2} />
-                <circle cx={7} cy={7.5} r={1.2} />
-                <path d="M3 14l4-4 4 4 3-3 3 3" />
-              </svg>
-              写真を追加
-              {images.length > 0 && (
-                <span style={{ fontSize: 11, fontWeight: 700, color: "var(--mf-accent)" }}>
-                  {images.length}/{MAX_IMAGES}
-                </span>
-              )}
-            </button>
-
-            {images.length > 0 && (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 6, marginTop: 8 }}>
-                {images.map((img, index) => (
-                  <div key={img.objectUrl} style={{ position: "relative", aspectRatio: "1/1" }}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={img.objectUrl}
-                      alt={`添付画像${index + 1}`}
-                      style={{ width: "100%", height: "100%", borderRadius: 10, objectFit: "cover" }}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveImage(index)}
-                      style={{
-                        position: "absolute", top: 4, right: 4,
-                        width: 20, height: 20,
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        borderRadius: "50%", background: "rgba(20,24,36,0.70)",
-                        color: "#fff", border: "none", cursor: "pointer",
-                      }}
-                      aria-label={`画像${index + 1}を削除`}
-                    >
-                      <svg width={10} height={10} viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
-                        <path d="M5 5l10 10M15 5L5 15" />
-                      </svg>
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
 
           {/* 投稿ボタン */}
           <button
             type="button"
-            disabled={text.trim().length === 0}
+            disabled={!canPost}
             style={{
-              width: "100%",
-              padding: "12px",
+              padding: "8px 18px",
               borderRadius: 999,
-              background: text.trim().length > 0 ? "var(--mf-accent)" : "var(--mf-surface-tint)",
-              color: text.trim().length > 0 ? "#fff" : "var(--mf-text-faint)",
-              fontSize: 14,
+              background: canPost ? "var(--mf-accent)" : "var(--mf-surface-tint)",
+              color: canPost ? "#fff" : "var(--mf-text-faint)",
+              fontSize: 13,
               fontWeight: 700,
+              letterSpacing: 0.3,
               border: "none",
-              cursor: text.trim().length > 0 ? "pointer" : "not-allowed",
-              boxShadow: text.trim().length > 0 ? "0 4px 14px rgba(212,146,42,0.25)" : "none",
+              cursor: canPost ? "pointer" : "not-allowed",
+              whiteSpace: "nowrap",
+              boxShadow: canPost ? "0 2px 10px rgba(212,146,42,0.25)" : "none",
               transition: "background 0.15s, box-shadow 0.15s",
             }}
           >
-            投稿する
+            投稿
           </button>
         </div>
       </div>
-    </>
+
+      {/* フェイス選択ピル */}
+      <div style={{ padding: "12px 18px 0", flexShrink: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ fontSize: 11, color: "var(--mf-text-muted)", fontWeight: 600 }}>このフェイスに書く</span>
+          <button
+            type="button"
+            onClick={() => setShowFacePicker((p) => !p)}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 7,
+              padding: "5px 10px 5px 6px",
+              background: "var(--mf-surface-tint)",
+              borderRadius: 999,
+              border: "none",
+              cursor: "pointer",
+            }}
+          >
+            {selectedFace && <FaceBadge face={selectedFace} size={22} radius={6} />}
+            <span style={{ fontSize: 13, fontWeight: 700, color: "var(--mf-brand)" }}>
+              {selectedFace ? getFaceTitle(selectedFace) : "フェイスを選択"}
+            </span>
+            <svg width={12} height={12} viewBox="0 0 12 12" fill="none" stroke="var(--mf-text-muted)" strokeWidth={1.5} strokeLinecap="round">
+              <path d="M2 4l4 4 4-4" />
+            </svg>
+          </button>
+        </div>
+
+        {/* フェイス選択ドロップダウン */}
+        {showFacePicker && (
+          <div
+            style={{
+              marginTop: 8,
+              background: "var(--mf-surface)",
+              borderRadius: 12,
+              border: "0.5px solid var(--mf-line)",
+              overflow: "hidden",
+              boxShadow: "0 8px 24px rgba(30,42,74,0.1)",
+            }}
+          >
+            {myFaces.map((face) => (
+              <button
+                key={face.id}
+                type="button"
+                onClick={() => {
+                  setSelectedFaceId(face.id);
+                  setShowFacePicker(false);
+                }}
+                style={{
+                  width: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  padding: "10px 14px",
+                  background: face.id === selectedFaceId ? "var(--mf-hover)" : "transparent",
+                  border: "none",
+                  cursor: "pointer",
+                  textAlign: "left",
+                }}
+              >
+                <FaceBadge face={face} size={28} radius={8} />
+                <span style={{ fontSize: 13.5, fontWeight: 600, color: "var(--mf-brand)" }}>
+                  {getFaceTitle(face)}
+                </span>
+                {face.id === selectedFaceId && (
+                  <svg width={14} height={14} viewBox="0 0 14 14" fill="none" stroke="var(--mf-accent)" strokeWidth={2} strokeLinecap="round" style={{ marginLeft: "auto" }}>
+                    <path d="M2 7l4 4 6-7" />
+                  </svg>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* 書き込みキャンバス */}
+      <div style={{ flex: 1, padding: "16px 18px", overflowY: "auto" }}>
+        <textarea
+          ref={textareaRef}
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          maxLength={MAX_LENGTH}
+          placeholder="気軽に書き留めてみましょう…"
+          style={{
+            width: "100%",
+            height: "100%",
+            minHeight: 200,
+            resize: "none",
+            border: "none",
+            background: "transparent",
+            fontSize: 17,
+            lineHeight: 1.9,
+            color: "var(--mf-ink)",
+            outline: "none",
+            fontFamily: "var(--mf-font-sans)",
+            caretColor: "var(--mf-accent)",
+          }}
+        />
+
+        {/* 画像プレビュー */}
+        {images.length > 0 && (
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "2fr 1fr",
+              gap: 3,
+              borderRadius: 14,
+              overflow: "hidden",
+              height: 150,
+              border: "0.5px solid var(--mf-line-soft)",
+              marginTop: 12,
+            }}
+          >
+            {images.slice(0, 3).map((img, index) => (
+              <div
+                key={img.objectUrl}
+                style={{
+                  position: "relative",
+                  ...(index === 0 ? {} : { display: "flex" }),
+                  ...(index > 0 && images.length > 2 ? { flexDirection: "column" } : {}),
+                  gridRow: index === 0 ? "1 / 3" : undefined,
+                }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={img.objectUrl}
+                  alt={`添付画像${index + 1}`}
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
+                <button
+                  type="button"
+                  onClick={() => handleRemoveImage(index)}
+                  style={{
+                    position: "absolute",
+                    top: 4,
+                    right: 4,
+                    width: 20,
+                    height: 20,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderRadius: "50%",
+                    background: "rgba(20,24,36,0.70)",
+                    color: "#fff",
+                    border: "none",
+                    cursor: "pointer",
+                  }}
+                  aria-label={`画像${index + 1}を削除`}
+                >
+                  <svg width={10} height={10} viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
+                    <path d="M5 5l10 10M15 5L5 15" />
+                  </svg>
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* ボトムバー */}
+      <div
+        style={{
+          flexShrink: 0,
+          borderTop: "0.5px solid var(--mf-line)",
+          padding: "10px 18px",
+          display: "flex",
+          alignItems: "center",
+          gap: 14,
+          paddingBottom: "calc(10px + env(safe-area-inset-bottom))",
+        }}
+      >
+        {/* 画像添付 */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          style={{ display: "none" }}
+          onChange={handleFileChange}
+        />
+        <button
+          type="button"
+          disabled={images.length >= MAX_IMAGES}
+          onClick={() => fileInputRef.current?.click()}
+          aria-label="画像を添付"
+          style={{
+            width: 34,
+            height: 34,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            borderRadius: "50%",
+            background: "none",
+            border: "none",
+            cursor: images.length >= MAX_IMAGES ? "not-allowed" : "pointer",
+            color: images.length >= MAX_IMAGES ? "var(--mf-text-faint)" : "var(--mf-text-sub)",
+          }}
+        >
+          <svg width={20} height={20} viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+            <rect x={3} y={3} width={14} height={14} rx={2} />
+            <circle cx={7} cy={7.5} r={1.2} />
+            <path d="M3 14l4-4 4 4 3-3 3 3" />
+          </svg>
+        </button>
+
+        {/* リンクボタン */}
+        <button
+          type="button"
+          aria-label="リンクを追加"
+          style={{
+            width: 34,
+            height: 34,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            borderRadius: "50%",
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            color: "var(--mf-text-sub)",
+          }}
+        >
+          <svg width={18} height={18} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+            <path d="M6.5 9.5a3.54 3.54 0 005 0l2-2a3.54 3.54 0 00-5-5l-1 1" />
+            <path d="M9.5 6.5a3.54 3.54 0 00-5 0l-2 2a3.54 3.54 0 005 5l1-1" />
+          </svg>
+        </button>
+
+        <div style={{ flex: 1 }} />
+
+        {/* 文字数カウント + 下書き */}
+        <span style={{ fontSize: 11, color: "var(--mf-text-faint)" }}>
+          {text.length} / {MAX_LENGTH.toLocaleString()}
+        </span>
+        <span style={{ fontSize: 11, color: "var(--mf-text-faint)" }}>
+          下書き保存済
+        </span>
+      </div>
+    </div>
   );
 };
 

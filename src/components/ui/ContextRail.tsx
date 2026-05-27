@@ -7,12 +7,13 @@ import { activityRepository } from "@/repositories/activity-repository";
 import { faceRepository } from "@/repositories/face-repository";
 import { userRepository } from "@/repositories/user-repository";
 import { subscriptionRepository } from "@/repositories/subscription-repository";
-import { getFaceTitle } from "@/lib/display";
+import { getFaceTitle, getFaceColor, getFaceKanji } from "@/lib/display";
 import { formatRelativeTime } from "@/lib/format-relative-time";
 import type { Face } from "@/types/face";
 import ActivityDetail from "./ActivityDetail";
 import FaceDetail from "./FaceDetail";
 import FaceBadge from "./FaceBadge";
+import FaceChip from "./FaceChip";
 import RailCard from "./RailCard";
 import SeedRow from "./SeedRow";
 
@@ -23,12 +24,11 @@ const WritingRail = () => {
   const user = userRepository.getCurrentUser();
   const allActivities = activityRepository.listByUserId(user.id);
 
-  const thisMonth = REFERENCE_DATE.toISOString().slice(0, 7); // "2026-04"
+  const thisMonth = REFERENCE_DATE.toISOString().slice(0, 7);
   const monthlyActs = allActivities.filter((a) => a.createdAt.startsWith(thisMonth));
   const monthlySeeds = monthlyActs.length;
   const monthlyFaces = new Set(monthlyActs.map((a) => a.faceId)).size;
 
-  // ストリーク: REFERENCE_DATE から過去に向かって連続投稿日数を数える
   const dateSet = new Set(allActivities.map((a) => a.createdAt.slice(0, 10)));
   let streak = 0;
   const cur = new Date(REFERENCE_DATE);
@@ -37,66 +37,98 @@ const WritingRail = () => {
     cur.setDate(cur.getDate() - 1);
   }
 
+  // On This Day: 同じ月日の過去アクティビティ
+  const mmdd = REFERENCE_DATE.toISOString().slice(5, 10);
+  const onThisDay = allActivities.find((a) => {
+    const d = a.createdAt.slice(0, 10);
+    return d.slice(5) === mmdd && !d.startsWith("2026");
+  });
+  const onThisDayFace = onThisDay ? faceRepository.findById(onThisDay.faceId) : undefined;
+  const yearsAgo = onThisDay
+    ? REFERENCE_DATE.getFullYear() - parseInt(onThisDay.createdAt.slice(0, 4), 10)
+    : 0;
+
+  // 月間バーチャート（当月の日別シード数、31本）
+  const daysInMonth = 31;
+  const dailyCounts = Array.from({ length: daysInMonth }, (_, i) => {
+    const day = String(i + 1).padStart(2, "0");
+    const key = `${thisMonth}-${day}`;
+    return monthlyActs.filter((a) => a.createdAt.startsWith(key)).length;
+  });
+  const maxCount = Math.max(...dailyCounts, 1);
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      {/* On This Day */}
+      {onThisDay && onThisDayFace && (
+        <RailCard title="On This Day" action={`${yearsAgo}年前`}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+            <FaceChip faceId={onThisDayFace.id} title={getFaceTitle(onThisDayFace)} />
+            <span style={{ fontSize: 10.5, color: "var(--mf-text-muted)" }}>
+              {onThisDay.createdAt.slice(0, 10).replace(/-/g, ".")}
+            </span>
+          </div>
+          <p
+            style={{
+              fontSize: 12.5,
+              lineHeight: 1.65,
+              color: "var(--mf-ink)",
+              margin: 0,
+              overflow: "hidden",
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+            }}
+          >
+            {onThisDay.body}
+          </p>
+          <p style={{ marginTop: 6, fontSize: 11, color: "var(--mf-text-muted)", fontStyle: "italic", margin: "6px 0 0" }}>
+            今のあなたは、何と返しますか
+          </p>
+        </RailCard>
+      )}
+
+      {/* 今月の記録 + バーチャート */}
       <RailCard title="今月の記録">
-        <div style={{ display: "flex", gap: 18 }}>
+        <div style={{ display: "flex", gap: 18, marginBottom: 14 }}>
           {[
             { n: String(monthlySeeds), l: "シード" },
             { n: String(streak), l: "日連続" },
             { n: String(monthlyFaces), l: "フェイス" },
           ].map((s) => (
             <div key={s.l} style={{ textAlign: "center" }}>
-              <div
-                style={{
-                  fontSize: 22,
-                  fontWeight: 700,
-                  color: "var(--mf-brand)",
-                  fontFamily: "var(--mf-font-serif-en)",
-                }}
-              >
+              <div style={{ fontSize: 22, fontWeight: 700, color: "var(--mf-brand)", fontFamily: "var(--mf-font-serif-en)" }}>
                 {s.n}
               </div>
-              <div
-                style={{
-                  fontSize: 11,
-                  color: "var(--mf-text-muted)",
-                  marginTop: 2,
-                }}
-              >
-                {s.l}
-              </div>
+              <div style={{ fontSize: 11, color: "var(--mf-text-muted)", marginTop: 2 }}>{s.l}</div>
             </div>
+          ))}
+        </div>
+        {/* バーチャート */}
+        <div style={{ display: "flex", alignItems: "flex-end", gap: 2, height: 40 }}>
+          {dailyCounts.map((count, i) => (
+            <div
+              key={i}
+              style={{
+                flex: 1,
+                height: count === 0 ? 2 : `${Math.round((count / maxCount) * 100)}%`,
+                background: count === 0 ? "var(--mf-line)" : "var(--mf-accent)",
+                borderRadius: 2,
+                opacity: count === 0 ? 0.3 : 0.7 + (count / maxCount) * 0.3,
+                minHeight: count === 0 ? 2 : 4,
+              }}
+            />
           ))}
         </div>
       </RailCard>
 
       <RailCard pad="14px">
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-            color: "var(--mf-text-muted)",
-            fontSize: 13,
-          }}
-        >
+        <div style={{ display: "flex", alignItems: "center", gap: 10, color: "var(--mf-text-muted)", fontSize: 13 }}>
           <svg width={18} height={18} viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
-            <circle cx={8} cy={8} r={5.5} />
-            <path d="M12.2 12.2L16 16" />
+            <circle cx={8} cy={8} r={5.5} /><path d="M12.2 12.2L16 16" />
           </svg>
           すべてを検索
-          <div
-            style={{
-              marginLeft: "auto",
-              fontSize: 10.5,
-              padding: "2px 6px",
-              background: "var(--mf-surface-tint)",
-              borderRadius: 4,
-              color: "var(--mf-text-sub)",
-              fontWeight: 700,
-            }}
-          >
+          <div style={{ marginLeft: "auto", fontSize: 10.5, padding: "2px 6px", background: "var(--mf-surface-tint)", borderRadius: 4, color: "var(--mf-text-sub)", fontWeight: 700 }}>
             ⌘K
           </div>
         </div>
@@ -255,106 +287,132 @@ const ReflectionRail = () => {
 };
 
 // ── CollectionRail ─────────────────────────────────────────────
+const RECOMMENDED_FACES_MOCK = [
+  { name: "読書", handle: "h_maru", subs: 412, desc: "読みながら考えたこと" },
+  { name: "映画断片", handle: "sayaka_t", subs: 287, desc: "観終わってからしばらく" },
+  { name: "朝の珈琲", handle: "kettle_co", subs: 198, desc: "一杯目のメモ" },
+];
+
 const CollectionRail = () => {
   const subscribedFaceIds = subscriptionRepository.getSubscribedFaceIds();
   const subscribedFaces: Face[] = subscribedFaceIds.flatMap((id) => {
     const face = faceRepository.findById(id);
     return face ? [face] : [];
   });
-  const recentActivities = activityRepository.listByFaceIds(subscribedFaceIds).slice(0, 3);
-  const faceMap = new Map(subscribedFaces.map((f) => [f.id, f]));
   const userMap = new Map(userRepository.listAll().map((u) => [u.id, u]));
 
-  if (subscribedFaces.length === 0) {
-    return (
-      <RailCard title="サブスク中">
-        <p style={{ fontSize: 12.5, color: "var(--mf-text-muted)", margin: 0, lineHeight: 1.7 }}>
-          サブスクしているフェイスがありません。
-          <br />
-          <Link href="/search" style={{ color: "var(--mf-accent)", textDecoration: "none", fontWeight: 600 }}>
-            フェイスを探す →
-          </Link>
-        </p>
-      </RailCard>
-    );
-  }
+  const RECOMMENDED_COLORS = ["#5B8DB8", "#7B6B9E", "#A89050"];
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-      <RailCard title="サブスク中フェイス">
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          {subscribedFaces.map((face) => {
-            const lastAct = activityRepository.listByFaceId(face.id)[0];
-            const owner = userMap.get(face.userId);
-            return (
-              <Link
-                key={face.id}
-                href={`/faces/${face.id}`}
-                style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}
-              >
-                <FaceBadge face={face} size={32} radius={9} />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div
-                    style={{
-                      fontSize: 12.5,
-                      fontWeight: 700,
-                      color: "var(--mf-brand)",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {getFaceTitle(face)}
-                  </div>
-                  {owner && (
-                    <div style={{ fontSize: 11, color: "var(--mf-text-muted)", marginTop: 1 }}>
-                      {owner.name}
-                    </div>
-                  )}
-                </div>
-                {lastAct && (
-                  <span style={{ fontSize: 10.5, color: "var(--mf-text-faint)", flexShrink: 0 }}>
-                    {formatRelativeTime(lastAct.createdAt)}
-                  </span>
-                )}
-              </Link>
-            );
-          })}
-        </div>
-      </RailCard>
-
-      {recentActivities.length > 0 && (
-        <RailCard title="最新シード">
-          <div style={{ marginTop: -6 }}>
-            {recentActivities.map((act) => {
-              const face = faceMap.get(act.faceId);
-              if (!face) return null;
+      {subscribedFaces.length > 0 ? (
+        <RailCard title="サブスク中">
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {subscribedFaces.map((face) => {
+              const lastAct = activityRepository.listByFaceId(face.id)[0];
+              const owner = userMap.get(face.userId);
+              const hasUnread = lastAct && lastAct.createdAt >= "2026-03-25";
               return (
-                <SeedRow
-                  key={act.id}
-                  activity={act}
-                  face={face}
-                  noBorder
-                />
+                <Link
+                  key={face.id}
+                  href={`/faces/${face.id}`}
+                  style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}
+                >
+                  <div style={{ position: "relative", flexShrink: 0 }}>
+                    <FaceBadge face={face} size={32} radius={9} />
+                    {hasUnread && (
+                      <div style={{
+                        position: "absolute", top: -2, right: -2,
+                        width: 8, height: 8, borderRadius: "50%",
+                        background: "var(--mf-accent)",
+                        border: "1.5px solid var(--mf-surface)",
+                      }} />
+                    )}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 12.5, fontWeight: 700, color: "var(--mf-brand)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {getFaceTitle(face)}
+                    </div>
+                    {owner && (
+                      <div style={{ fontSize: 11, color: "var(--mf-text-muted)", marginTop: 1 }}>
+                        {owner.handle ? `@${owner.handle}` : owner.name}
+                      </div>
+                    )}
+                  </div>
+                  {lastAct && (
+                    <span style={{ fontSize: 10.5, color: "var(--mf-text-faint)", flexShrink: 0 }}>
+                      {formatRelativeTime(lastAct.createdAt)}
+                    </span>
+                  )}
+                </Link>
               );
             })}
-            <Link
-              href="/subscriptions"
-              style={{
-                display: "block",
-                textAlign: "center",
-                fontSize: 12,
-                color: "var(--mf-text-muted)",
-                marginTop: 6,
-                textDecoration: "none",
-                padding: "6px 0",
-              }}
-            >
-              もっと見る →
-            </Link>
           </div>
         </RailCard>
+      ) : (
+        <RailCard title="サブスク中">
+          <p style={{ fontSize: 12.5, color: "var(--mf-text-muted)", margin: 0, lineHeight: 1.7 }}>
+            サブスクしているフェイスがありません。
+            <br />
+            <Link href="/search" style={{ color: "var(--mf-accent)", textDecoration: "none", fontWeight: 600 }}>
+              フェイスを探す →
+            </Link>
+          </p>
+        </RailCard>
       )}
+
+      {/* おすすめフェイス */}
+      <RailCard title="おすすめ">
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {RECOMMENDED_FACES_MOCK.map((rec, i) => (
+            <div key={rec.handle} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div
+                style={{
+                  width: 34,
+                  height: 34,
+                  borderRadius: 9,
+                  background: RECOMMENDED_COLORS[i % RECOMMENDED_COLORS.length],
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                  fontFamily: "var(--mf-font-serif)",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  color: "#fff",
+                }}
+              >
+                {rec.name.slice(0, 1)}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 12.5, fontWeight: 700, color: "var(--mf-brand)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {rec.name}
+                </div>
+                <div style={{ fontSize: 10.5, color: "var(--mf-text-muted)", marginTop: 1 }}>
+                  @{rec.handle} · {rec.subs} サブスク
+                </div>
+              </div>
+              <button
+                type="button"
+                style={{
+                  padding: "5px 10px",
+                  borderRadius: 999,
+                  background: i === 0 ? "var(--mf-brand)" : "transparent",
+                  border: i === 0 ? "none" : "1px solid var(--mf-brand)",
+                  color: i === 0 ? "#fff" : "var(--mf-brand)",
+                  fontSize: 11,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                  flexShrink: 0,
+                }}
+              >
+                サブスク
+              </button>
+            </div>
+          ))}
+        </div>
+      </RailCard>
     </div>
   );
 };

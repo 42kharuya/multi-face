@@ -94,42 +94,49 @@ const HomeClient = () => {
         const face = faceRepository.findById(act.faceId);
         const year = parseInt(act.createdAt.slice(0, 4), 10);
         const yearsAgo = REFERENCE_DATE.getFullYear() - year;
+        const mmdd = act.createdAt.slice(5, 10).replace("-", "/");
         return (
-          <div
-            style={{
-              margin: "12px 28px",
-              borderRadius: 14,
-              border: "0.5px solid var(--mf-line)",
-              overflow: "hidden",
-              background: "var(--mf-surface-card)",
-            }}
-          >
-            {/* アンバーライン */}
-            <div style={{ height: 3, background: "var(--mf-accent)" }} />
-            <div style={{ padding: "12px 14px" }}>
-              <div
+          <div style={{ padding: "22px 28px 6px" }}>
+            {/* ヘッダー: アクセントライン + ON THIS DAY + N年前の今日 */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                marginBottom: 10,
+                whiteSpace: "nowrap",
+              }}
+            >
+              <div style={{ width: 14, height: 1, background: "var(--mf-accent)", flexShrink: 0 }} />
+              <span
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                  marginBottom: 8,
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color: "var(--mf-accent)",
+                  letterSpacing: 1,
+                  textTransform: "uppercase",
                 }}
               >
-                <svg width={12} height={12} viewBox="0 0 16 16" fill="none" stroke="var(--mf-accent)" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx={8} cy={8} r={6} />
-                  <path d="M8 5v3l2 2" />
-                </svg>
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 700,
-                    color: "var(--mf-accent)",
-                    letterSpacing: 0.3,
-                  }}
-                >
-                  {yearsAgo}年前の今日
-                </span>
+                On This Day
+              </span>
+              <span style={{ fontSize: 11.5, color: "var(--mf-text-muted)" }}>
+                · {yearsAgo}年前の今日
+              </span>
+            </div>
+            {/* カード */}
+            <div
+              style={{
+                background: "var(--mf-surface-card)",
+                borderRadius: 16,
+                padding: "14px 16px",
+                border: "0.5px solid var(--mf-line-soft)",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
                 {face && <FaceChip faceId={face.id} title={getFaceTitle(face)} />}
+                <span style={{ fontSize: 11, color: "var(--mf-text-muted)" }}>
+                  {act.createdAt.slice(0, 4)}.{mmdd}
+                </span>
               </div>
               <p
                 style={{
@@ -149,13 +156,12 @@ const HomeClient = () => {
                 style={{
                   marginTop: 8,
                   fontSize: 11,
-                  color: "var(--mf-text-faint)",
+                  color: "var(--mf-text-muted)",
                   fontStyle: "italic",
-                  fontFamily: "var(--mf-font-serif-en)",
                   margin: "8px 0 0",
                 }}
               >
-                {act.createdAt.slice(0, 10).replace(/-/g, "/")} の記録
+                今のあなたは、何と返しますか
               </p>
             </div>
           </div>

@@ -6,9 +6,12 @@ import { usePathname, useRouter } from "next/navigation";
 import Wordmark from "@/components/ui/Wordmark";
 import FaceBadge from "@/components/ui/FaceBadge";
 import FaceNavItem from "@/components/ui/FaceNavItem";
+import AccountMenu from "@/components/ui/AccountMenu";
 import CreateFaceModal from "@/components/face/CreateFaceModal";
 import { faceRepository } from "@/repositories/face-repository";
 import { userRepository } from "@/repositories/user-repository";
+import { notificationRepository } from "@/repositories/notification-repository";
+import { subscriptionRepository } from "@/repositories/subscription-repository";
 import { useDetailPanel } from "@/lib/detail-panel-context";
 import type { Face } from "@/types/face";
 
@@ -19,6 +22,8 @@ type NavItem = {
   icon: (active: boolean) => React.ReactNode;
   count?: number;
 };
+
+const UNREAD_CUTOFF = "2026-03-25";
 
 const PencilIcon = ({ active }: { active: boolean }) => (
   <svg width={22} height={22} viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
@@ -55,21 +60,27 @@ const BellIcon = ({ active }: { active: boolean }) => (
   </svg>
 );
 
-const NAV_ITEMS: NavItem[] = [
-  { href: "/",             label: "Writing",     jp: "書く",    icon: (a) => <PencilIcon active={a} /> },
-  { href: "/faces",        label: "Reflection",  jp: "振り返り", icon: (a) => <LayersIcon active={a} /> },
-  { href: "/subscriptions",label: "Collection",  jp: "蒐集",    icon: (a) => <CompassIcon active={a} /> },
-  { href: "/notifications",label: "Notifications",jp: "通知",   icon: (a) => <BellIcon active={a} />, count: 0 },
-];
-
 const SideNav = () => {
   const pathname = usePathname();
   const router = useRouter();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const currentUser = userRepository.getCurrentUser();
   const faces = faceRepository.listByUserId(currentUser.id);
   const { openFace } = useDetailPanel();
+
+  const unreadNotifCount = notificationRepository.listAll().filter(
+    (n) => n.createdAt >= UNREAD_CUTOFF
+  ).length;
+  const subscribedCount = subscriptionRepository.getSubscribedFaceIds().length;
+
+  const NAV_ITEMS: NavItem[] = [
+    { href: "/",             label: "Writing",      jp: "書く",    icon: (a) => <PencilIcon active={a} /> },
+    { href: "/faces",        label: "Reflection",   jp: "振り返り", icon: (a) => <LayersIcon active={a} /> },
+    { href: "/subscriptions",label: "Collection",   jp: "蒐集",    icon: (a) => <CompassIcon active={a} />, count: subscribedCount > 0 ? 3 : undefined },
+    { href: "/notifications",label: "Notifications",jp: "通知",    icon: (a) => <BellIcon active={a} />, count: unreadNotifCount > 0 ? unreadNotifCount : undefined },
+  ];
 
   const activeFaceId = pathname.startsWith("/faces/")
     ? pathname.split("/")[2]
@@ -248,8 +259,10 @@ const SideNav = () => {
 
         <div style={{ flex: 1 }} />
 
-        {/* ユーザーピル */}
-        <div
+        {/* ユーザーピル — クリックでアカウントメニュー */}
+        <button
+          type="button"
+          onClick={() => setMenuOpen((p) => !p)}
           style={{
             display: "flex",
             alignItems: "center",
@@ -258,6 +271,8 @@ const SideNav = () => {
             borderRadius: 12,
             background: "var(--mf-surface)",
             border: "0.5px solid var(--mf-line)",
+            cursor: "pointer",
+            width: "100%",
           }}
         >
           {faces[0] ? (
@@ -290,13 +305,19 @@ const SideNav = () => {
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",
+                textAlign: "left",
               }}
             >
               {currentUser.name}
             </div>
           </div>
-        </div>
+          <svg width={14} height={14} viewBox="0 0 14 14" fill="none" stroke="var(--mf-text-faint)" strokeWidth={1.5} strokeLinecap="round">
+            <path d="M2 5l5 4 5-4" />
+          </svg>
+        </button>
       </nav>
+
+      <AccountMenu isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
 
       <CreateFaceModal
         isOpen={isCreateModalOpen}

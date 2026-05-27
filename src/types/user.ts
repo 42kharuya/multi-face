@@ -1,6 +1,7 @@
 export type User = {
   id: string;
   name: string;
+  handle?: string;
   avatarUrl: string;
-  badge?: string; // バッジ絵文字
+  badge?: string;
 };

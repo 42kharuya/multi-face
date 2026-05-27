@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { type Face } from "@/types/face";
 import FaceBadge from "@/components/ui/FaceBadge";
-import { getFaceTitle } from "@/lib/display";
+import { getFaceTitle, getFaceColor } from "@/lib/display";
 import { activityRepository } from "@/repositories/activity-repository";
 import { subscriptionRepository } from "@/repositories/subscription-repository";
 
@@ -120,7 +120,7 @@ const FaceHeader = ({ face, isOwner = false, onSortChange }: FaceHeaderProps) =>
           </div>
         </div>
       ) : (
-        /* カバー画像なし */
+        /* カバー画像なし — face color グラデーションヒーロー */
         <div
           style={{
             display: "flex",
@@ -129,6 +129,7 @@ const FaceHeader = ({ face, isOwner = false, onSortChange }: FaceHeaderProps) =>
             gap: 12,
             padding: "28px 24px 20px",
             textAlign: "center",
+            background: `linear-gradient(180deg, ${getFaceColor(face.id)}1A 0%, transparent 100%)`,
           }}
         >
           <FaceBadge face={face} size={56} radius={15} />
