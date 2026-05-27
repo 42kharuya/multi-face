@@ -1,34 +1,48 @@
 "use client";
 
 import { useState } from "react";
-import { Pencil } from "lucide-react";
 import PostModal from "@/components/ui/PostModal";
 
 type Props = {
-  /** モーダルを開いた時点で選択済みにするフェイスID（省略可） */
   defaultFaceId?: string;
 };
 
 const FAB = ({ defaultFaceId }: Props) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleOpen = () => setIsModalOpen(true);
-  const handleClose = () => setIsModalOpen(false);
-
   return (
     <>
       <button
         type="button"
-        onClick={handleOpen}
+        onClick={() => setIsModalOpen(true)}
         aria-label="投稿する"
-        className="md:hidden fixed bottom-24 right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-violet-600 text-white shadow-lg shadow-violet-900/50 transition-all duration-200 hover:bg-violet-500 active:scale-95 active:bg-violet-700"
+        className="md:hidden fixed z-40"
+        style={{
+          bottom: 88,
+          right: 16,
+          width: 56,
+          height: 56,
+          borderRadius: "50%",
+          background: "var(--mf-accent)",
+          color: "#fff",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          border: "none",
+          cursor: "pointer",
+          boxShadow: "0 4px 20px rgba(212,146,42,0.35)",
+          transition: "transform 0.15s, background 0.15s",
+        }}
       >
-        <Pencil size={22} strokeWidth={2.5} />
+        <svg width={22} height={22} viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+          <path d="M3 17l1-3.5L13 4.5l3.5 3.5L7.5 17H3z" />
+          <path d="M12 5.5l3.5 3.5" />
+        </svg>
       </button>
 
       <PostModal
         isOpen={isModalOpen}
-        onClose={handleClose}
+        onClose={() => setIsModalOpen(false)}
         defaultFaceId={defaultFaceId}
       />
     </>

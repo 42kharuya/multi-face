@@ -2,16 +2,13 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { X } from "lucide-react";
 import { activityRepository } from "@/repositories/activity-repository";
 import { faceRepository } from "@/repositories/face-repository";
 import { userRepository } from "@/repositories/user-repository";
 import { useDetailPanel } from "@/lib/detail-panel-context";
 import { getFaceTitle } from "@/lib/display";
-import Avatar from "./Avatar";
-import Badge from "./Badge";
+import FaceBadge from "./FaceBadge";
 import FaceChip from "./FaceChip";
-import { cn } from "@/lib/utils";
 import { formatRelativeTime } from "@/lib/format-relative-time";
 
 type ActivityDetailProps = {
@@ -27,78 +24,145 @@ const ActivityDetail = ({ activityId }: ActivityDetailProps) => {
 
   if (!activity || !user) {
     return (
-      <div className="flex flex-col h-full">
-        <div className="sticky top-0 flex items-center justify-between border-b border-zinc-800 bg-zinc-950/80 px-4 py-3 backdrop-blur-sm">
-          <h2 className="text-sm font-semibold text-zinc-400">アクティビティ詳細</h2>
+      <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "14px 16px",
+            borderBottom: "0.5px solid var(--mf-line)",
+            background: "rgba(248,246,241,0.85)",
+            backdropFilter: "blur(10px)",
+          }}
+        >
+          <span style={{ fontSize: 13, fontWeight: 700, color: "var(--mf-brand)" }}>
+            シード詳細
+          </span>
           <button
             type="button"
             aria-label="閉じる"
             onClick={close}
-            className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
+            style={{
+              width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center",
+              borderRadius: "50%", border: "none", background: "transparent",
+              color: "var(--mf-text-muted)", cursor: "pointer",
+            }}
           >
-            <X size={16} />
+            <svg width={16} height={16} viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round">
+              <path d="M5 5l10 10M15 5L5 15" />
+            </svg>
           </button>
         </div>
-        <div className="flex flex-col items-center justify-center h-full gap-3 px-8 text-center">
-          <p className="text-sm text-zinc-600">アクティビティが見つかりませんでした</p>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", flex: 1, padding: "32px 16px" }}>
+          <p style={{ fontSize: 13, color: "var(--mf-text-muted)" }}>シードが見つかりませんでした</p>
         </div>
       </div>
     );
   }
 
-  const resolvedFaceTitle = face ? getFaceTitle(face) : "";
-  const faceTitle = resolvedFaceTitle || activity.faceId || "不明なフェイス";
+  const faceTitle = face ? getFaceTitle(face) : activity.faceId || "不明なフェイス";
   const relativeTime = formatRelativeTime(activity.createdAt);
 
   return (
-    <div className="flex flex-col h-full">
+    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
       {/* ヘッダー */}
-      <div className="sticky top-0 flex items-center justify-between border-b border-zinc-800 bg-zinc-950/80 px-4 py-3 backdrop-blur-sm">
-        <h2 className="text-sm font-semibold text-zinc-400">アクティビティ詳細</h2>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "14px 16px",
+          borderBottom: "0.5px solid var(--mf-line)",
+          background: "rgba(248,246,241,0.85)",
+          backdropFilter: "blur(10px)",
+          position: "sticky",
+          top: 0,
+          zIndex: 1,
+        }}
+      >
+        <span style={{ fontSize: 13, fontWeight: 700, color: "var(--mf-brand)" }}>
+          シード詳細
+        </span>
         <button
           type="button"
           aria-label="閉じる"
           onClick={close}
-          className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
+          style={{
+            width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center",
+            borderRadius: "50%", border: "none", background: "transparent",
+            color: "var(--mf-text-muted)", cursor: "pointer",
+          }}
         >
-          <X size={16} />
+          <svg width={16} height={16} viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round">
+            <path d="M5 5l10 10M15 5L5 15" />
+          </svg>
         </button>
       </div>
 
       {/* コンテンツ */}
-      <div className="px-4 py-4 flex flex-col gap-4 overflow-y-auto">
+      <div style={{ padding: "16px", display: "flex", flexDirection: "column", gap: 16, overflowY: "auto" }}>
         {/* ユーザー・フェイス行 */}
-        <div className="flex items-start gap-3">
-          <Avatar src={user.avatarUrl} alt={user.name} size="md" />
-          <div className="flex flex-col gap-0.5">
-            <div className="flex items-center gap-1.5 text-sm font-semibold text-zinc-100">
-              <span>{user.name}</span>
-              {user.badge && <Badge emoji={user.badge} />}
-            </div>
-            <div className="flex items-center gap-2">
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+          {face ? (
+            <FaceBadge face={face} size={40} radius={11} />
+          ) : (
+            <div style={{
+              width: 40, height: 40, borderRadius: 11,
+              background: "var(--mf-surface-tint)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 18, flexShrink: 0,
+            }}>?</div>
+          )}
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--mf-brand)" }}>
+              {user.name}
+            </span>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <FaceChip title={faceTitle} faceId={activity.faceId} />
-              <time dateTime={activity.createdAt} className="text-xs text-zinc-500">
+              <time
+                dateTime={activity.createdAt}
+                style={{ fontSize: 11.5, color: "var(--mf-text-muted)" }}
+              >
                 {relativeTime}
               </time>
             </div>
           </div>
         </div>
 
-        {/* 本文（全文展開・折りたたみなし） */}
-        <p className="text-sm leading-relaxed text-zinc-200 whitespace-pre-wrap">
+        {/* 本文 */}
+        <p
+          style={{
+            fontSize: 14,
+            lineHeight: 1.75,
+            color: "var(--mf-ink)",
+            whiteSpace: "pre-wrap",
+            margin: 0,
+          }}
+        >
           {activity.body}
         </p>
 
         {/* 画像グリッド */}
         {activity.imageUrls && activity.imageUrls.length > 0 && (
           <div
-            className={cn(
-              "grid gap-1.5 overflow-hidden rounded-xl",
-              activity.imageUrls.length === 1 ? "grid-cols-1" : "grid-cols-2",
-            )}
+            style={{
+              display: "grid",
+              gridTemplateColumns: `repeat(${Math.min(activity.imageUrls.length, 2)}, 1fr)`,
+              gap: 3,
+              borderRadius: 14,
+              overflow: "hidden",
+              border: "0.5px solid var(--mf-line-soft)",
+            }}
           >
             {activity.imageUrls.map((url, i) => (
-              <div key={i} className="relative aspect-video w-full overflow-hidden rounded-lg">
+              <div
+                key={i}
+                style={{
+                  position: "relative",
+                  aspectRatio: activity.imageUrls!.length === 1 ? "16/10" : "1/1",
+                }}
+              >
                 <Image
                   src={url}
                   alt={`画像 ${i + 1}`}
@@ -114,7 +178,12 @@ const ActivityDetail = ({ activityId }: ActivityDetailProps) => {
         {/* フェイスへのリンク */}
         <Link
           href={`/faces/${activity.faceId}`}
-          className="mt-2 self-start text-xs text-violet-400 hover:text-violet-300 transition-colors"
+          style={{
+            fontSize: 12,
+            color: "var(--mf-accent)",
+            fontWeight: 600,
+            textDecoration: "none",
+          }}
         >
           → このフェイスを見る
         </Link>

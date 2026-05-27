@@ -1,6 +1,5 @@
 "use client";
 
-import Avatar from "@/components/ui/Avatar";
 import { notificationRepository } from "@/repositories/notification-repository";
 import { userRepository } from "@/repositories/user-repository";
 import { faceRepository } from "@/repositories/face-repository";
@@ -9,18 +8,13 @@ import { type Notification } from "@/types/notification";
 import { type User } from "@/types/user";
 import { formatRelativeTime } from "@/lib/format-relative-time";
 import { createLookupMap, getFaceTitle } from "@/lib/display";
-import { cn } from "@/lib/utils";
 import { useDetailPanel } from "@/lib/detail-panel-context";
-
-// ─── 通知アイテム ──────────────────────────────────────────────
 
 type NotificationItemProps = {
   notification: Notification;
   fromUser: User;
   detail: string;
-  /** リンク通知の場合のアクティビティ本文スニペット（任意） */
   activitySnippet?: string;
-  /** リンク通知の場合の紐づくアクティビティID */
   activityId?: string;
 };
 
@@ -35,49 +29,90 @@ const NotificationItem = ({
   const isLink = notification.type === "link";
 
   const isSelected =
-    state.type === "activity" && activityId !== undefined && state.activityId === activityId;
-
-  const handleClick = () => {
-    if (activityId) openActivity(activityId);
-  };
+    state.type === "activity" &&
+    activityId !== undefined &&
+    state.activityId === activityId;
 
   return (
     <li
-      onClick={handleClick}
-      className={cn(
-        "flex gap-3 rounded-2xl bg-zinc-800/60 p-4 transition",
-        activityId && "md:cursor-pointer hover:bg-zinc-800",
-        isSelected && "ring-1 ring-violet-500/40 bg-zinc-800",
-      )}
+      onClick={() => {
+        if (activityId) openActivity(activityId);
+      }}
+      style={{
+        display: "flex",
+        gap: 12,
+        padding: "14px 16px",
+        borderRadius: 14,
+        background: isSelected
+          ? "rgba(30,42,74,0.06)"
+          : "var(--mf-surface-card)",
+        border: `0.5px solid ${isSelected ? "var(--mf-brand)" : "var(--mf-line)"}`,
+        cursor: activityId ? "pointer" : "default",
+        transition: "background 0.15s, border 0.15s",
+      }}
     >
-      {/* アバター */}
-      <div className="shrink-0">
-        <Avatar src={fromUser.avatarUrl} alt={fromUser.name} size="md" />
+      {/* ユーザー頭文字アバター */}
+      <div
+        style={{
+          width: 36,
+          height: 36,
+          borderRadius: "50%",
+          background: "var(--mf-brand)",
+          color: "#fff",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: 14,
+          fontWeight: 700,
+          flexShrink: 0,
+        }}
+      >
+        {fromUser.name.slice(0, 1)}
       </div>
 
       {/* 本文 */}
-      <div className="flex flex-1 flex-col gap-1.5 overflow-hidden">
-        {/* アクション行 */}
-        <div className="flex items-start justify-between gap-2">
-          <p className="text-sm text-zinc-200 leading-snug">
-            <span className="font-semibold text-zinc-100">{fromUser.name}</span>
+      <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 6 }}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
+          <p style={{ fontSize: 13, color: "var(--mf-text)", lineHeight: 1.5, margin: 0 }}>
+            <span style={{ fontWeight: 700 }}>{fromUser.name}</span>
             {" さんが "}
-            <span className="text-violet-400">{detail}</span>
+            <span style={{ color: "var(--mf-accent)", fontWeight: 600 }}>{detail}</span>
           </p>
-          <span className="shrink-0 text-xs text-zinc-500">
+          <span style={{ flexShrink: 0, fontSize: 11.5, color: "var(--mf-text-muted)" }}>
             {formatRelativeTime(notification.createdAt)}
           </span>
         </div>
 
-        {/* リンク通知: アクティビティ本文スニペット */}
         {isLink && activitySnippet && (
-          <blockquote className="rounded-lg border-l-2 border-violet-500/60 bg-zinc-900/60 px-3 py-2 text-xs text-zinc-400 line-clamp-2">
+          <blockquote
+            style={{
+              borderLeft: "2px solid var(--mf-accent)",
+              paddingLeft: 10,
+              margin: 0,
+              fontSize: 12,
+              color: "var(--mf-text-sub)",
+              lineHeight: 1.6,
+              overflow: "hidden",
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+            }}
+          >
             {activitySnippet}
           </blockquote>
         )}
 
-        {/* 通知種別バッジ */}
-        <span className="self-start rounded-full bg-zinc-700/60 px-2 py-0.5 text-xs text-zinc-400">
+        <span
+          style={{
+            alignSelf: "flex-start",
+            padding: "2px 8px",
+            borderRadius: 999,
+            background: "var(--mf-surface-tint)",
+            fontSize: 11,
+            color: "var(--mf-text-muted)",
+            fontWeight: 600,
+          }}
+        >
           {isLink ? "🔗 リンク" : "📥 サブスク"}
         </span>
       </div>
@@ -85,62 +120,59 @@ const NotificationItem = ({
   );
 };
 
-// ─── NotificationList ──────────────────────────────────────────
-
-/**
- * 通知一覧コンポーネント（Client Component）。
- * notificationRepository から全通知を取得し、時系列降順で表示する。
- * リンク通知のアイテムをクリックすると DetailPanel に紐づくアクティビティを表示する。
- */
 const NotificationList = () => {
   const notifications = notificationRepository.listAll();
-
-  // ユーザー情報をマップ化
   const userMap = createLookupMap(userRepository.listAll(), (user) => user.id);
-
-  // アクティビティをマップ化（リンク通知のスニペット表示用）
   const activityMap = createLookupMap(activityRepository.listAll(), (activity) => activity.id);
 
   if (notifications.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-4 py-20 text-center">
-        <p className="text-4xl">🔔</p>
-        <p className="text-sm text-zinc-400">まだ通知はありません</p>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 16,
+          padding: "80px 0",
+          textAlign: "center",
+        }}
+      >
+        <p style={{ fontSize: 36 }}>🔔</p>
+        <p style={{ fontSize: 13, color: "var(--mf-text-muted)" }}>
+          まだ通知はありません
+        </p>
       </div>
     );
   }
 
   return (
-    <ul className="flex flex-col gap-3">
+    <ul style={{ display: "flex", flexDirection: "column", gap: 10, listStyle: "none", padding: 0, margin: 0 }}>
       {notifications.map((notification) => {
         const fromUser = userMap.get(notification.fromUserId);
         if (!fromUser) return null;
 
         if (notification.type === "link") {
           const activity = activityMap.get(notification.activityId);
-          const detail = "あなたの投稿をリンクしました";
           return (
             <NotificationItem
               key={notification.id}
               notification={notification}
               fromUser={fromUser}
-              detail={detail}
+              detail="あなたの投稿をリンクしました"
               activitySnippet={activity?.body}
               activityId={notification.activityId}
             />
           );
         }
 
-        // subscribe
         const face = faceRepository.findById(notification.faceId);
         const faceName = face ? getFaceTitle(face) : notification.faceId;
-        const detail = `${faceName} をサブスクライブしました`;
         return (
           <NotificationItem
             key={notification.id}
             notification={notification}
             fromUser={fromUser}
-            detail={detail}
+            detail={`${faceName} をサブスクライブしました`}
           />
         );
       })}

@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { X, ChevronDown, ImagePlus } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { faceRepository } from "@/repositories/face-repository";
 import { userRepository } from "@/repositories/user-repository";
+import FaceBadge from "./FaceBadge";
+import { getFaceTitle } from "@/lib/display";
 
 const MAX_IMAGES = 4;
+const MAX_LENGTH = 5000;
 
 type AttachedImage = {
   file: File;
@@ -16,27 +17,26 @@ type AttachedImage = {
 type Props = {
   isOpen: boolean;
   onClose: () => void;
-  /** モーダルを開いた時点で選択済みにするフェイスID（省略可） */
   defaultFaceId?: string;
 };
 
 const PostModal = ({ isOpen, onClose, defaultFaceId }: Props) => {
   const currentUser = userRepository.getCurrentUser();
-  const myFaces = useMemo(() => {
-    return faceRepository.listByUserId(currentUser.id);
-  }, [currentUser.id]);
-  const initialSelectedFaceId = useMemo(() => {
-    return defaultFaceId ?? myFaces[0]?.id ?? "";
-  }, [defaultFaceId, myFaces]);
+  const myFaces = useMemo(
+    () => faceRepository.listByUserId(currentUser.id),
+    [currentUser.id],
+  );
+  const initialSelectedFaceId = useMemo(
+    () => defaultFaceId ?? myFaces[0]?.id ?? "",
+    [defaultFaceId, myFaces],
+  );
   const [selectedFaceId, setSelectedFaceId] = useState<string>(initialSelectedFaceId);
   const [text, setText] = useState("");
   const [images, setImages] = useState<AttachedImage[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const MAX_LENGTH = 5000;
 
   const selectedFace = myFaces.find((f) => f.id === selectedFaceId);
 
-  // モーダルが閉じたら画像をリセット・objectURL を解放
   useEffect(() => {
     if (!isOpen) {
       setImages((prev) => {
@@ -48,7 +48,6 @@ const PostModal = ({ isOpen, onClose, defaultFaceId }: Props) => {
     }
   }, [initialSelectedFaceId, isOpen]);
 
-  // アンマウント時の残存 objectURL クリーンアップ
   useEffect(() => {
     return () => {
       images.forEach((img) => URL.revokeObjectURL(img.objectUrl));
@@ -60,12 +59,10 @@ const PostModal = ({ isOpen, onClose, defaultFaceId }: Props) => {
     const files = Array.from(e.target.files ?? []);
     const remaining = MAX_IMAGES - images.length;
     const toAdd = files.slice(0, remaining);
-    const newImages: AttachedImage[] = toAdd.map((file) => ({
-      file,
-      objectUrl: URL.createObjectURL(file),
-    }));
-    setImages((prev) => [...prev, ...newImages]);
-    // 同じファイルを再選択できるようにリセット
+    setImages((prev) => [
+      ...prev,
+      ...toAdd.map((file) => ({ file, objectUrl: URL.createObjectURL(file) })),
+    ]);
     e.target.value = "";
   };
 
@@ -82,7 +79,13 @@ const PostModal = ({ isOpen, onClose, defaultFaceId }: Props) => {
     <>
       {/* オーバーレイ */}
       <div
-        className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
+        style={{
+          position: "fixed",
+          inset: 0,
+          zIndex: 50,
+          background: "rgba(20,24,36,0.5)",
+          backdropFilter: "blur(4px)",
+        }}
         onClick={onClose}
         aria-hidden="true"
       />
@@ -92,67 +95,93 @@ const PostModal = ({ isOpen, onClose, defaultFaceId }: Props) => {
         role="dialog"
         aria-modal="true"
         aria-label="投稿"
-        className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-zinc-900 shadow-xl"
+        style={{
+          position: "fixed",
+          left: "50%",
+          top: "50%",
+          zIndex: 50,
+          width: "calc(100% - 2rem)",
+          maxWidth: 480,
+          transform: "translate(-50%, -50%)",
+          borderRadius: 20,
+          background: "var(--mf-surface)",
+          border: "0.5px solid var(--mf-line)",
+          boxShadow: "0 20px 60px rgba(30,42,74,0.15)",
+        }}
       >
         {/* ヘッダー */}
-        <div className="flex items-center justify-between px-4 pt-4 pb-2">
-          <h2 className="text-base font-bold text-zinc-100">投稿する</h2>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "16px 18px 14px",
+            borderBottom: "0.5px solid var(--mf-line)",
+          }}
+        >
+          <h2 style={{ fontSize: 15, fontWeight: 700, color: "var(--mf-brand)", margin: 0 }}>
+            新しいシードを書く
+          </h2>
           <button
             type="button"
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-100"
+            style={{
+              width: 28, height: 28,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              borderRadius: "50%", border: "none", background: "transparent",
+              color: "var(--mf-text-muted)", cursor: "pointer",
+            }}
             aria-label="閉じる"
           >
-            <X size={18} />
+            <svg width={16} height={16} viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round">
+              <path d="M5 5l10 10M15 5L5 15" />
+            </svg>
           </button>
         </div>
 
-        <div className="px-4 pb-6 flex flex-col gap-4">
+        <div style={{ padding: "16px 18px 20px", display: "flex", flexDirection: "column", gap: 14 }}>
           {/* フェイス選択 */}
-          <div className="flex flex-col gap-1.5">
+          <div>
             <label
               htmlFor="face-select"
-              className="text-xs font-medium text-zinc-400"
+              style={{ fontSize: 11.5, fontWeight: 600, color: "var(--mf-text-muted)", display: "block", marginBottom: 6 }}
             >
               フェイス
             </label>
-            <div className="relative">
+            <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px 8px 8px", borderRadius: 12, border: "0.5px solid var(--mf-line)", background: "var(--mf-bg-paper)" }}>
+              {selectedFace && <FaceBadge face={selectedFace} size={28} radius={7} />}
               <select
                 id="face-select"
                 value={selectedFaceId}
                 onChange={(e) => setSelectedFaceId(e.target.value)}
-                className={cn(
-                  "w-full appearance-none rounded-xl border border-zinc-700 bg-zinc-800 px-4 py-2.5 pr-10",
-                  "text-sm text-zinc-100 outline-none transition-colors",
-                  "focus:border-violet-500 focus:ring-1 focus:ring-violet-500/50",
-                )}
+                style={{
+                  flex: 1,
+                  appearance: "none",
+                  border: "none",
+                  background: "transparent",
+                  fontSize: 13.5,
+                  fontWeight: 700,
+                  color: "var(--mf-brand)",
+                  outline: "none",
+                  cursor: "pointer",
+                }}
               >
                 {myFaces.map((face) => (
                   <option key={face.id} value={face.id}>
-                    {face.emoji ? `${face.emoji} ${face.name}` : face.name}
+                    {getFaceTitle(face)}
                   </option>
                 ))}
               </select>
-              <ChevronDown
-                size={16}
-                className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400"
-              />
             </div>
             {selectedFace?.description && (
-              <p className="text-xs text-zinc-500 leading-relaxed">
+              <p style={{ fontSize: 11.5, color: "var(--mf-text-muted)", margin: "6px 0 0", lineHeight: 1.5 }}>
                 {selectedFace.description}
               </p>
             )}
           </div>
 
           {/* テキストエリア */}
-          <div className="flex flex-col gap-1.5">
-            <label
-              htmlFor="post-text"
-              className="text-xs font-medium text-zinc-400"
-            >
-              内容
-            </label>
+          <div>
             <textarea
               id="post-text"
               value={text}
@@ -160,71 +189,92 @@ const PostModal = ({ isOpen, onClose, defaultFaceId }: Props) => {
               maxLength={MAX_LENGTH}
               rows={5}
               placeholder="気軽に書き留めてみましょう…"
-              className={cn(
-                "w-full resize-none rounded-xl border border-zinc-700 bg-zinc-800 px-4 py-3",
-                "text-sm text-zinc-100 placeholder:text-zinc-600 outline-none transition-colors",
-                "focus:border-violet-500 focus:ring-1 focus:ring-violet-500/50",
-              )}
+              style={{
+                width: "100%",
+                resize: "none",
+                borderRadius: 12,
+                border: "0.5px solid var(--mf-line)",
+                background: "var(--mf-bg-paper)",
+                padding: "12px 14px",
+                fontSize: 14,
+                lineHeight: 1.75,
+                color: "var(--mf-ink)",
+                outline: "none",
+                fontFamily: "var(--mf-font-sans)",
+                boxSizing: "border-box",
+              }}
             />
-            <p className="text-right text-xs text-zinc-600">
+            <p style={{ textAlign: "right", fontSize: 11, color: "var(--mf-text-muted)", margin: "4px 0 0" }}>
               {text.length} / {MAX_LENGTH.toLocaleString()}
             </p>
           </div>
 
-          {/* 画像添付エリア */}
-          <div className="flex flex-col gap-2">
-            {/* hidden file input */}
+          {/* 画像添付 */}
+          <div>
             <input
               ref={fileInputRef}
               type="file"
               accept="image/*"
               multiple
-              className="hidden"
+              style={{ display: "none" }}
               onChange={handleFileChange}
             />
-            {/* 添付ボタン */}
             <button
               type="button"
               disabled={images.length >= MAX_IMAGES}
               onClick={() => fileInputRef.current?.click()}
-              className={cn(
-                "flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium transition-all duration-200 w-fit",
-                images.length >= MAX_IMAGES
-                  ? "cursor-not-allowed border-zinc-800 text-zinc-600"
-                  : "border-zinc-700 text-zinc-400 hover:border-violet-500 hover:text-violet-400 hover:bg-violet-500/10 active:scale-95",
-              )}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "7px 14px",
+                borderRadius: 999,
+                border: "0.5px solid var(--mf-line)",
+                background: "transparent",
+                fontSize: 12.5,
+                fontWeight: 600,
+                color: images.length >= MAX_IMAGES ? "var(--mf-text-faint)" : "var(--mf-text-sub)",
+                cursor: images.length >= MAX_IMAGES ? "not-allowed" : "pointer",
+              }}
             >
-              <ImagePlus size={15} />
+              <svg width={15} height={15} viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+                <rect x={3} y={3} width={14} height={14} rx={2} />
+                <circle cx={7} cy={7.5} r={1.2} />
+                <path d="M3 14l4-4 4 4 3-3 3 3" />
+              </svg>
               写真を追加
               {images.length > 0 && (
-                <span className={cn(
-                  "ml-0.5 rounded-full px-1.5 py-0.5 text-xs font-bold leading-none",
-                  images.length >= MAX_IMAGES
-                    ? "bg-zinc-800 text-zinc-600"
-                    : "bg-violet-500/20 text-violet-400",
-                )}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: "var(--mf-accent)" }}>
                   {images.length}/{MAX_IMAGES}
                 </span>
               )}
             </button>
-            {/* サムネイルプレビュー */}
+
             {images.length > 0 && (
-              <div className="grid grid-cols-2 gap-2">
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 6, marginTop: 8 }}>
                 {images.map((img, index) => (
-                  <div key={img.objectUrl} className="relative aspect-square">
+                  <div key={img.objectUrl} style={{ position: "relative", aspectRatio: "1/1" }}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={img.objectUrl}
                       alt={`添付画像${index + 1}`}
-                      className="h-full w-full rounded-lg object-cover"
+                      style={{ width: "100%", height: "100%", borderRadius: 10, objectFit: "cover" }}
                     />
                     <button
                       type="button"
                       onClick={() => handleRemoveImage(index)}
-                      className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/70 text-white transition-colors hover:bg-black"
+                      style={{
+                        position: "absolute", top: 4, right: 4,
+                        width: 20, height: 20,
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        borderRadius: "50%", background: "rgba(20,24,36,0.70)",
+                        color: "#fff", border: "none", cursor: "pointer",
+                      }}
                       aria-label={`画像${index + 1}を削除`}
                     >
-                      <X size={12} />
+                      <svg width={10} height={10} viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
+                        <path d="M5 5l10 10M15 5L5 15" />
+                      </svg>
                     </button>
                   </div>
                 ))}
@@ -232,16 +282,23 @@ const PostModal = ({ isOpen, onClose, defaultFaceId }: Props) => {
             )}
           </div>
 
-          {/* 投稿ボタン（モック：押しても何もしない） */}
+          {/* 投稿ボタン */}
           <button
             type="button"
             disabled={text.trim().length === 0}
-            className={cn(
-              "w-full rounded-xl py-3 text-sm font-bold transition-colors",
-              text.trim().length > 0
-                ? "bg-violet-600 text-white hover:bg-violet-500 active:bg-violet-700"
-                : "bg-zinc-800 text-zinc-600 cursor-not-allowed",
-            )}
+            style={{
+              width: "100%",
+              padding: "12px",
+              borderRadius: 999,
+              background: text.trim().length > 0 ? "var(--mf-accent)" : "var(--mf-surface-tint)",
+              color: text.trim().length > 0 ? "#fff" : "var(--mf-text-faint)",
+              fontSize: 14,
+              fontWeight: 700,
+              border: "none",
+              cursor: text.trim().length > 0 ? "pointer" : "not-allowed",
+              boxShadow: text.trim().length > 0 ? "0 4px 14px rgba(212,146,42,0.25)" : "none",
+              transition: "background 0.15s, box-shadow 0.15s",
+            }}
           >
             投稿する
           </button>

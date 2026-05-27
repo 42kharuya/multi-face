@@ -15,3 +15,35 @@ export const getFaceTitle = (
     .join(" ")
     .trim();
 };
+
+/** Midnight Ink の 6 フェイスカラー */
+const MF_FACE_COLORS = [
+  "#5B8DB8", // water  水青
+  "#5B9B72", // moss   苔緑
+  "#7B6B9E", // wisteria 藤紫
+  "#C47A50", // persimmon 柿橙
+  "#B06B7A", // rose   薔薇
+  "#A89050", // grass  枯草
+];
+
+/** faceId の数字和 mod 6 でカラーを決定 */
+export const getFaceColor = (faceId: string): string => {
+  const digits = faceId.replace(/\D/g, "");
+  if (!digits) return MF_FACE_COLORS[0];
+  const sum = digits.split("").reduce((acc, d) => acc + parseInt(d, 10), 0);
+  return MF_FACE_COLORS[sum % MF_FACE_COLORS.length];
+};
+
+/**
+ * faceTitle（例："📚 読書"）から最初の非絵文字・非スペース文字を返す。
+ * サロゲートペア（絵文字）をスキップして最初の通常文字を取得する。
+ */
+export const getFaceKanji = (faceTitle: string): string => {
+  for (const char of faceTitle) {
+    const cp = char.codePointAt(0) ?? 0;
+    if (cp > 0xffff) continue; // サロゲートペア（絵文字）をスキップ
+    if (cp < 0x0021) continue; // 制御文字・スペースをスキップ
+    return char;
+  }
+  return "?";
+};
