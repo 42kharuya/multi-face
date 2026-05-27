@@ -4,14 +4,24 @@ import { type Face } from "@/types/face";
 import { activityRepository } from "@/repositories/activity-repository";
 import { useDetailPanel } from "@/lib/detail-panel-context";
 import SeedRow from "@/components/ui/SeedRow";
+import type { SortOrder } from "./FaceHeader";
 
 type FaceActivityFeedProps = {
   face: Face;
+  sortOrder?: SortOrder;
 };
 
-const FaceActivityFeed = ({ face }: FaceActivityFeedProps) => {
+const FaceActivityFeed = ({ face, sortOrder = "newest" }: FaceActivityFeedProps) => {
   const { openActivity } = useDetailPanel();
-  const faceActivities = activityRepository.listByFaceId(face.id);
+
+  let faceActivities = activityRepository.listByFaceId(face.id);
+
+  if (sortOrder === "oldest") {
+    faceActivities = [...faceActivities].reverse();
+  } else if (sortOrder === "images") {
+    faceActivities = faceActivities.filter((a) => (a.imageUrls?.length ?? 0) > 0);
+  }
+  // "newest" は repository がデフォルトで降順ソート済み
 
   if (faceActivities.length === 0) {
     return (
@@ -23,7 +33,7 @@ const FaceActivityFeed = ({ face }: FaceActivityFeedProps) => {
           padding: "64px 0",
         }}
       >
-        まだシードがありません
+        {sortOrder === "images" ? "画像付きのシードがありません" : "まだシードがありません"}
       </p>
     );
   }

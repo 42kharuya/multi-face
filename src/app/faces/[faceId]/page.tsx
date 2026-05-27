@@ -2,8 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { faceRepository } from "@/repositories/face-repository";
 import { userRepository } from "@/repositories/user-repository";
-import FaceHeader from "@/components/face/FaceHeader";
-import FaceActivityFeed from "@/components/face/FaceActivityFeed";
+import FaceDetailClient from "@/components/face/FaceDetailClient";
 import FAB from "@/components/ui/FAB";
 
 type Props = {
@@ -76,13 +75,10 @@ const FaceDetailPage = async ({ params }: Props) => {
       </header>
 
       <main>
-        <div style={{ borderBottom: "0.5px solid var(--mf-line)" }}>
-          <FaceHeader face={face} isOwner={face.userId === currentUser.id} />
-        </div>
-
-        <section>
-          <FaceActivityFeed face={face} />
-        </section>
+        <FaceDetailClient
+          face={face}
+          isOwner={face.userId === currentUser.id}
+        />
       </main>
 
       {face.userId === currentUser.id && (
