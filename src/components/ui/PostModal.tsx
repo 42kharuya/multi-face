@@ -362,68 +362,92 @@ const PostModal = ({ isOpen, onClose, defaultFaceId }: Props) => {
           padding: "10px 18px",
           display: "flex",
           alignItems: "center",
-          gap: 14,
+          justifyContent: "space-between",
           paddingBottom: "calc(10px + env(safe-area-inset-bottom))",
         }}
       >
-        {/* 画像添付 */}
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          multiple
-          style={{ display: "none" }}
-          onChange={handleFileChange}
-        />
-        <button
-          type="button"
-          disabled={images.length >= MAX_IMAGES}
-          onClick={() => fileInputRef.current?.click()}
-          aria-label="画像を添付"
-          style={{
-            width: 34,
-            height: 34,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            borderRadius: "50%",
-            background: "none",
-            border: "none",
-            cursor: images.length >= MAX_IMAGES ? "not-allowed" : "pointer",
-            color: images.length >= MAX_IMAGES ? "var(--mf-text-faint)" : "var(--mf-text-sub)",
-          }}
-        >
-          <svg width={20} height={20} viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
-            <rect x={3} y={3} width={14} height={14} rx={2} />
-            <circle cx={7} cy={7.5} r={1.2} />
-            <path d="M3 14l4-4 4 4 3-3 3 3" />
-          </svg>
-        </button>
+        {/* 画像添付 + リンクボタン */}
+        <div style={{ display: "flex", alignItems: "center", gap: 22 }}>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            style={{ display: "none" }}
+            onChange={handleFileChange}
+          />
+          <button
+            type="button"
+            disabled={images.length >= MAX_IMAGES}
+            onClick={() => fileInputRef.current?.click()}
+            aria-label="画像を添付"
+            style={{
+              position: "relative",
+              width: 34,
+              height: 34,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              borderRadius: "50%",
+              background: "none",
+              border: "none",
+              cursor: images.length >= MAX_IMAGES ? "not-allowed" : "pointer",
+              color: images.length >= MAX_IMAGES ? "var(--mf-text-faint)" : "var(--mf-brand)",
+            }}
+          >
+            <svg width={20} height={20} viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+              <rect x={3} y={3} width={14} height={14} rx={2} />
+              <circle cx={7} cy={7.5} r={1.2} />
+              <path d="M3 14l4-4 4 4 3-3 3 3" />
+            </svg>
+            {images.length > 0 && (
+              <span
+                style={{
+                  position: "absolute",
+                  top: 1,
+                  right: 1,
+                  background: "var(--mf-accent)",
+                  color: "#fff",
+                  borderRadius: 999,
+                  fontSize: 9,
+                  fontWeight: 700,
+                  minWidth: 14,
+                  height: 14,
+                  padding: "0 3px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  boxSizing: "border-box",
+                }}
+              >
+                {images.length}
+              </span>
+            )}
+          </button>
 
-        {/* リンクボタン */}
-        <button
-          type="button"
-          aria-label="リンクを追加"
-          style={{
-            width: 34,
-            height: 34,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            borderRadius: "50%",
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            color: "var(--mf-text-sub)",
-          }}
-        >
-          <svg width={18} height={18} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
-            <path d="M6.5 9.5a3.54 3.54 0 005 0l2-2a3.54 3.54 0 00-5-5l-1 1" />
-            <path d="M9.5 6.5a3.54 3.54 0 00-5 0l-2 2a3.54 3.54 0 005 5l1-1" />
-          </svg>
-        </button>
-
-        <div style={{ flex: 1 }} />
+          {/* リンクボタン */}
+          <button
+            type="button"
+            aria-label="リンクを追加"
+            style={{
+              width: 34,
+              height: 34,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              borderRadius: "50%",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              color: "var(--mf-brand)",
+            }}
+          >
+            <svg width={18} height={18} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+              <path d="M6.5 9.5a3.54 3.54 0 005 0l2-2a3.54 3.54 0 00-5-5l-1 1" />
+              <path d="M9.5 6.5a3.54 3.54 0 00-5 0l-2 2a3.54 3.54 0 005 5l1-1" />
+            </svg>
+          </button>
+        </div>
 
         {/* 文字数カウント + 下書き */}
         <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 11.5, color: "var(--mf-text-muted)", whiteSpace: "nowrap" }}>
