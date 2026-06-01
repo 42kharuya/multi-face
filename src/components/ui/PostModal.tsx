@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { faceRepository } from "@/repositories/face-repository";
 import { userRepository } from "@/repositories/user-repository";
 import FaceBadge from "./FaceBadge";
-import { getFaceTitle } from "@/lib/display";
+import { getFaceTitle, getFaceColor } from "@/lib/display";
 
 const MAX_IMAGES = 4;
 const MAX_LENGTH = 5000;
@@ -195,9 +195,8 @@ const PostModal = ({ isOpen, onClose, defaultFaceId }: Props) => {
       </div>
 
       {/* フェイス選択ピル */}
-      <div style={{ padding: "12px 18px 0", flexShrink: 0 }}>
+      <div style={{ padding: "4px 18px 14px", flexShrink: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ fontSize: 11, color: "var(--mf-text-muted)", fontWeight: 600 }}>このフェイスに書く</span>
           <button
             type="button"
             onClick={() => setShowFacePicker((p) => !p)}
@@ -205,21 +204,23 @@ const PostModal = ({ isOpen, onClose, defaultFaceId }: Props) => {
               display: "inline-flex",
               alignItems: "center",
               gap: 7,
-              padding: "5px 10px 5px 6px",
-              background: "var(--mf-surface-tint)",
+              padding: "6px 12px 6px 6px",
+              background: selectedFace ? `${getFaceColor(selectedFace.id)}12` : "var(--mf-surface-tint)",
               borderRadius: 999,
               border: "none",
               cursor: "pointer",
+              whiteSpace: "nowrap",
             }}
           >
             {selectedFace && <FaceBadge face={selectedFace} size={22} radius={6} />}
-            <span style={{ fontSize: 13, fontWeight: 700, color: "var(--mf-brand)" }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: selectedFace ? getFaceColor(selectedFace.id) : "var(--mf-text-muted)" }}>
               {selectedFace ? getFaceTitle(selectedFace) : "フェイスを選択"}
             </span>
-            <svg width={12} height={12} viewBox="0 0 12 12" fill="none" stroke="var(--mf-text-muted)" strokeWidth={1.5} strokeLinecap="round">
-              <path d="M2 4l4 4 4-4" />
+            <svg width={9} height={9} viewBox="0 0 10 7" fill="none" stroke={selectedFace ? getFaceColor(selectedFace.id) : "var(--mf-text-muted)"} strokeWidth={1.6} strokeLinecap="round">
+              <path d="M1 1l4 4 4-4" />
             </svg>
           </button>
+          <span style={{ fontSize: 11.5, color: "var(--mf-text-muted)" }}>このフェイスに書く</span>
         </div>
 
         {/* フェイス選択ドロップダウン */}
@@ -425,12 +426,11 @@ const PostModal = ({ isOpen, onClose, defaultFaceId }: Props) => {
         <div style={{ flex: 1 }} />
 
         {/* 文字数カウント + 下書き */}
-        <span style={{ fontSize: 11, color: "var(--mf-text-faint)" }}>
-          {text.length} / {MAX_LENGTH.toLocaleString()}
-        </span>
-        <span style={{ fontSize: 11, color: "var(--mf-text-faint)" }}>
-          下書き保存済
-        </span>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 11.5, color: "var(--mf-text-muted)", whiteSpace: "nowrap" }}>
+          <span>{text.length} 文字</span>
+          <div style={{ width: 4, height: 4, borderRadius: "50%", background: "var(--mf-line-soft)" }} />
+          <span>下書き保存済</span>
+        </div>
       </div>
     </div>
   );

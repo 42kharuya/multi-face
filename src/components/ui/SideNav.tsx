@@ -310,6 +310,11 @@ const SideNav = () => {
             >
               {currentUser.name}
             </div>
+            {currentUser.handle && (
+              <div style={{ fontSize: 11, color: "var(--mf-text-muted)", textAlign: "left" }}>
+                @{currentUser.handle}
+              </div>
+            )}
           </div>
           <svg width={14} height={14} viewBox="0 0 14 14" fill="none" stroke="var(--mf-text-faint)" strokeWidth={1.5} strokeLinecap="round">
             <path d="M2 5l5 4 5-4" />

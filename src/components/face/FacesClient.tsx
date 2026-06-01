@@ -319,9 +319,10 @@ const FacesClient = ({ initialFaces }: Props) => {
                     style={{
                       height: 56,
                       background: color,
+                      padding: 12,
                       display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
+                      alignItems: "flex-start",
+                      justifyContent: "space-between",
                       flexShrink: 0,
                     }}
                   >
@@ -335,83 +336,87 @@ const FacesClient = ({ initialFaces }: Props) => {
                         alignItems: "center",
                         justifyContent: "center",
                         fontFamily: "var(--mf-font-serif)",
-                        fontSize: 16,
-                        fontWeight: 600,
+                        fontSize: 14,
+                        fontWeight: 500,
                         color: "#fff",
                       }}
                     >
                       {kanji}
                     </div>
+                    {face.isPrivate ? (
+                      <div style={{
+                        display: "flex", alignItems: "center", gap: 3,
+                        padding: "3px 7px",
+                        background: "rgba(20,24,36,0.32)",
+                        borderRadius: 999,
+                        backdropFilter: "blur(8px)",
+                        WebkitBackdropFilter: "blur(8px)",
+                      }}>
+                        <svg width={10} height={10} viewBox="0 0 14 14" fill="none" stroke="#fff" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+                          <rect x={2.5} y={6} width={9} height={6.5} rx={1.2} />
+                          <path d="M4.5 6V4a2.5 2.5 0 015 0v2" />
+                        </svg>
+                        <span style={{ fontSize: 9, color: "#fff", fontWeight: 700, letterSpacing: 0.3 }}>非公開</span>
+                      </div>
+                    ) : (
+                      <svg width={16} height={16} viewBox="0 0 18 18" fill="rgba(255,255,255,0.85)">
+                        <circle cx={3} cy={9} r={1.5} /><circle cx={9} cy={9} r={1.5} /><circle cx={15} cy={9} r={1.5} />
+                      </svg>
+                    )}
                   </div>
 
                   {/* カード本文 */}
-                  <div style={{ padding: "10px 12px 12px", flex: 1, display: "flex", flexDirection: "column" }}>
-                    <div
-                      style={{
-                        fontSize: 14.5,
-                        fontWeight: 700,
-                        color: "var(--mf-brand)",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                        marginBottom: 6,
-                      }}
-                    >
-                      {getFaceTitle(face)}
-                    </div>
+                  <div style={{ padding: "11px 13px 12px", flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                    <div>
+                      <div
+                        style={{
+                          fontSize: 14.5,
+                          fontWeight: 700,
+                          color: "var(--mf-brand)",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          letterSpacing: 0.1,
+                          lineHeight: 1.2,
+                        }}
+                      >
+                        {getFaceTitle(face)}
+                      </div>
 
-                    {/* 統計行 */}
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "baseline",
-                        justifyContent: "space-between",
-                        marginBottom: 4,
-                      }}
-                    >
-                      <span style={{ fontSize: 11, color: "var(--mf-text-sub)" }}>
-                        <b style={{ color: "var(--mf-text)", fontWeight: 700, fontSize: 17 }}>
-                          {stats?.total ?? 0}
-                        </b>{" "}
-                        シード
-                      </span>
-                      {stats && stats.monthly > 0 && (
-                        <span
-                          style={{
-                            fontSize: 10,
-                            color: "var(--mf-accent)",
-                            fontWeight: 600,
-                          }}
-                        >
-                          +{stats.monthly}/月
+                      {/* 統計行 */}
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "baseline",
+                          gap: 6,
+                          marginTop: 5,
+                        }}
+                      >
+                        <span>
+                          <b style={{ color: "var(--mf-text)", fontWeight: 700, fontSize: 17 }}>
+                            {stats?.total ?? 0}
+                          </b>
+                          <span style={{ fontSize: 10, color: "var(--mf-text-muted)", marginLeft: 2 }}>シード</span>
                         </span>
-                      )}
+                        {stats && stats.monthly > 0 && (
+                          <span
+                            style={{
+                              marginLeft: "auto",
+                              fontSize: 10.5,
+                              color,
+                              fontWeight: 700,
+                            }}
+                          >
+                            +{stats.monthly}/月
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     {/* 最終投稿日 */}
-                    {stats?.lastDate && (
-                      <div style={{ fontSize: 10.5, color: "var(--mf-text-faint)", marginTop: "auto" }}>
-                        {stats.lastDate.replace(/-/g, "/")}
-                      </div>
-                    )}
-
-                    {face.isPrivate && (
-                      <span
-                        style={{
-                          marginTop: 4,
-                          display: "inline-block",
-                          padding: "2px 8px",
-                          borderRadius: 999,
-                          background: "var(--mf-surface-tint)",
-                          fontSize: 10,
-                          color: "var(--mf-text-muted)",
-                          fontWeight: 600,
-                          alignSelf: "flex-start",
-                        }}
-                      >
-                        非公開
-                      </span>
-                    )}
+                    <div style={{ fontSize: 10.5, color: "var(--mf-text-muted)" }}>
+                      {stats?.lastDate ? stats.lastDate.replace(/-/g, "/") : "—"}
+                    </div>
                   </div>
                 </div>
               </Link>
