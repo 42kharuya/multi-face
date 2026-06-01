@@ -192,21 +192,28 @@ const HomeClient = () => {
       <div
         style={{
           display: "flex",
-          alignItems: "center",
+          alignItems: "baseline",
           justifyContent: "space-between",
-          padding: "14px 28px 6px",
+          padding: "20px 18px 4px",
         }}
       >
         <span
           style={{
-            fontSize: 11,
+            fontSize: 13.5,
             fontWeight: 700,
-            letterSpacing: 0.6,
-            textTransform: "uppercase",
-            color: "var(--mf-text-muted)",
+            letterSpacing: 0.2,
+            color: "var(--mf-brand)",
           }}
         >
           最近のシード
+        </span>
+        <span
+          style={{
+            fontSize: 11.5,
+            color: "var(--mf-text-muted)",
+          }}
+        >
+          すべて見る
         </span>
       </div>
 
