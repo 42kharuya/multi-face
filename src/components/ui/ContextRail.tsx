@@ -143,145 +143,61 @@ const ReflectionRail = () => {
   const faces = faceRepository.listByUserId(user.id);
   const allActivities = activityRepository.listByUserId(user.id);
 
-  const refKey = REFERENCE_DATE.toISOString().slice(0, 10);
-  const weekAgo = new Date(REFERENCE_DATE);
-  weekAgo.setDate(REFERENCE_DATE.getDate() - 7);
-  const weekKey = weekAgo.toISOString().slice(0, 10);
-
   const thisMonth = REFERENCE_DATE.toISOString().slice(0, 7);
-  const lastMonthDate = new Date(REFERENCE_DATE);
-  lastMonthDate.setMonth(REFERENCE_DATE.getMonth() - 1);
-  const lastMonth = lastMonthDate.toISOString().slice(0, 7);
 
-  const thirtyAgo = new Date(REFERENCE_DATE);
-  thirtyAgo.setDate(REFERENCE_DATE.getDate() - 30);
-  const thirtyKey = thirtyAgo.toISOString().slice(0, 10);
-
-  // 今週のトップフェイス（直近7日）
-  const weekActs = allActivities.filter((a) => {
-    const d = a.createdAt.slice(0, 10);
-    return d >= weekKey && d <= refKey;
-  });
-  const weekFaceCounts = new Map<string, number>();
-  for (const act of weekActs) {
-    weekFaceCounts.set(act.faceId, (weekFaceCounts.get(act.faceId) ?? 0) + 1);
-  }
-  const topFaces = [...weekFaceCounts.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 3)
-    .flatMap(([faceId, count]) => {
-      const face = faces.find((f) => f.id === faceId);
-      return face ? [{ face, count }] : [];
-    });
-
-  // 先月比で増加したフェイス
-  const thisMonthCount = new Map<string, number>();
-  const lastMonthCount = new Map<string, number>();
+  // 今月の各フェイスのシード数
+  const monthlyCountMap = new Map<string, number>();
   for (const act of allActivities) {
-    const m = act.createdAt.slice(0, 7);
-    if (m === thisMonth) thisMonthCount.set(act.faceId, (thisMonthCount.get(act.faceId) ?? 0) + 1);
-    if (m === lastMonth) lastMonthCount.set(act.faceId, (lastMonthCount.get(act.faceId) ?? 0) + 1);
+    if (act.createdAt.startsWith(thisMonth)) {
+      monthlyCountMap.set(act.faceId, (monthlyCountMap.get(act.faceId) ?? 0) + 1);
+    }
   }
-  const grownFaces = faces
-    .map((f) => ({ face: f, diff: (thisMonthCount.get(f.id) ?? 0) - (lastMonthCount.get(f.id) ?? 0) }))
-    .filter((x) => x.diff > 0)
-    .sort((a, b) => b.diff - a.diff)
-    .slice(0, 3);
 
-  // 停滞中フェイス（直近30日間に0投稿）
-  const stalledFaces = faces
-    .filter((f) => !allActivities.some((a) => a.faceId === f.id && a.createdAt.slice(0, 10) >= thirtyKey))
-    .slice(0, 3);
+  const facesWithCount = faces
+    .map((f) => ({ face: f, count: monthlyCountMap.get(f.id) ?? 0 }))
+    .filter(({ count }) => count > 0)
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
+
+  const maxCount = Math.max(...facesWithCount.map(({ count }) => count), 1);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-      <RailCard title="今週のフェイス">
-        {topFaces.length === 0 ? (
+      <RailCard title="フェイスについて">
+        <p style={{ fontSize: 12.5, lineHeight: 1.75, color: "var(--mf-text-sub)", margin: 0 }}>
+          フェイスは「あなたの多面性」のひとつ。
+          投稿したい内容にあったフェイスで書き、後から自分のために振り返ることができます。
+        </p>
+      </RailCard>
+
+      <RailCard title="アクティビティ" action="今月">
+        {facesWithCount.length === 0 ? (
           <p style={{ fontSize: 12, color: "var(--mf-text-muted)", margin: 0 }}>
-            今週はまだ記録がありません
+            今月はまだ記録がありません
           </p>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {topFaces.map(({ face, count }) => (
-              <div key={face.id} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <FaceBadge face={face} size={28} radius={8} />
-                <span
-                  style={{
-                    flex: 1,
-                    fontSize: 12.5,
-                    color: "var(--mf-ink)",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {getFaceTitle(face)}
-                </span>
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 700,
-                    color: "var(--mf-accent)",
-                    background: "rgba(212,146,42,0.1)",
-                    padding: "2px 7px",
-                    borderRadius: 999,
-                    flexShrink: 0,
-                  }}
-                >
-                  {count}件
-                </span>
-              </div>
-            ))}
+            {facesWithCount.map(({ face, count }) => {
+              const color = getFaceColor(face.id);
+              const pct = (count / maxCount) * 100;
+              return (
+                <div key={face.id} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <FaceBadge face={face} size={24} radius={6} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mf-text)" }}>{getFaceTitle(face)}</span>
+                      <span style={{ fontSize: 11, color: "var(--mf-text-muted)", fontWeight: 600 }}>{count}</span>
+                    </div>
+                    <div style={{ height: 4, background: "var(--mf-surface-tint)", borderRadius: 2, overflow: "hidden" }}>
+                      <div style={{ height: "100%", width: `${pct}%`, background: color, borderRadius: 2 }} />
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
       </RailCard>
-
-      {(grownFaces.length > 0 || stalledFaces.length > 0) && (
-        <RailCard title="変化の可視化">
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {grownFaces.map(({ face, diff }) => (
-              <div key={`grown-${face.id}`} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <FaceBadge face={face} size={24} radius={7} />
-                <span
-                  style={{
-                    flex: 1,
-                    fontSize: 12,
-                    color: "var(--mf-ink)",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {getFaceTitle(face)}
-                </span>
-                <span style={{ fontSize: 11, color: "var(--mf-accent)", fontWeight: 600, flexShrink: 0 }}>
-                  ↑+{diff}
-                </span>
-              </div>
-            ))}
-            {stalledFaces.map((face) => (
-              <div key={`stalled-${face.id}`} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <FaceBadge face={face} size={24} radius={7} />
-                <span
-                  style={{
-                    flex: 1,
-                    fontSize: 12,
-                    color: "var(--mf-text-sub)",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {getFaceTitle(face)}
-                </span>
-                <span style={{ fontSize: 11, color: "var(--mf-text-muted)", fontWeight: 600, flexShrink: 0 }}>
-                  停滞中
-                </span>
-              </div>
-            ))}
-          </div>
-        </RailCard>
-      )}
     </div>
   );
 };

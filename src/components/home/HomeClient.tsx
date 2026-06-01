@@ -34,14 +34,34 @@ const HomeClient = () => {
 
   const defaultFace = faces[0] ?? null;
 
+  const today = REFERENCE_DATE;
+  const weekday = ["日", "月", "火", "水", "木", "金", "土"][today.getDay()];
+  const dateLabel = `${today.getMonth() + 1}月${today.getDate()}日 (${weekday})`;
+
   return (
     <div style={{ display: "flex", flexDirection: "column" }}>
+      {/* モバイル専用タイトル (PC は TopBar が担当) */}
+      <div
+        className="md:hidden"
+        style={{ padding: "4px 18px 14px" }}
+      >
+        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
+          <div style={{ fontSize: 22, fontWeight: 700, color: "var(--mf-brand)", letterSpacing: -0.3 }}>
+            書く
+          </div>
+          <div style={{ fontSize: 12, color: "var(--mf-text-sub)", fontWeight: 500 }}>
+            {dateLabel}
+          </div>
+        </div>
+      </div>
+
       {/* インラインコンポーズ */}
       <div
         style={{
-          padding: "12px 28px",
+          padding: "12px 18px 12px",
           borderBottom: "0.5px solid var(--mf-line)",
         }}
+        className="md:px-[28px]"
       >
         <button
           type="button"
