@@ -318,8 +318,8 @@ const SideNav = () => {
               </div>
             )}
           </div>
-          <svg width={14} height={14} viewBox="0 0 14 14" fill="none" stroke="var(--mf-text-faint)" strokeWidth={1.5} strokeLinecap="round">
-            <path d="M2 5l5 4 5-4" />
+          <svg width={16} height={16} viewBox="0 0 18 18" fill="var(--mf-text-muted)">
+            <circle cx={3} cy={9} r={1.5} /><circle cx={9} cy={9} r={1.5} /><circle cx={15} cy={9} r={1.5} />
           </svg>
         </button>
       </nav>
