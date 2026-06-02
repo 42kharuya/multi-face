@@ -271,7 +271,7 @@ const PostModal = ({ isOpen, onClose, defaultFaceId }: Props) => {
       </div>
 
       {/* 書き込みキャンバス */}
-      <div style={{ flex: 1, padding: "16px 18px", overflowY: "auto" }}>
+      <div style={{ flex: 1, padding: "4px 22px", overflowY: "auto" }}>
         <textarea
           ref={textareaRef}
           value={text}
