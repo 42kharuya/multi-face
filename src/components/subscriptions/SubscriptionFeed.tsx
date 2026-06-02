@@ -97,19 +97,24 @@ const SubscriptionFeed = () => {
             type="button"
             onClick={() => setActiveTab(key)}
             style={{
-              flex: 1,
-              padding: "13px 0",
-              fontSize: 13,
-              fontWeight: activeTab === key ? 700 : 400,
+              padding: "11px 14px",
+              fontSize: 13.5,
+              fontWeight: activeTab === key ? 700 : 600,
               color: activeTab === key ? "var(--mf-brand)" : "var(--mf-text-muted)",
               background: "none",
               border: "none",
               cursor: "pointer",
-              borderBottom: activeTab === key ? "2px solid var(--mf-accent)" : "2px solid transparent",
-              marginBottom: -0.5,
+              borderBottom: activeTab === key ? "2.5px solid var(--mf-accent)" : "2.5px solid transparent",
+              marginBottom: -1,
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
             }}
           >
             {label}
+            {activeTab === key && (
+              <div style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--mf-accent)" }} />
+            )}
           </button>
         ))}
       </div>
@@ -120,7 +125,7 @@ const SubscriptionFeed = () => {
           {subscribedFaces.length > 0 && (
             <div
               style={{
-                padding: "12px 16px",
+                padding: "14px 18px 8px",
                 borderBottom: "0.5px solid var(--mf-line)",
                 overflowX: "auto",
                 display: "flex",
@@ -279,13 +284,35 @@ const RECOMMENDED_FACES = [
 
 const EmptyState = () => (
   <div>
+    {/* SearchBar */}
+    <div style={{ padding: "0 18px 0" }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          padding: "10px 14px",
+          background: "var(--mf-surface)",
+          borderRadius: 12,
+          border: "0.5px solid var(--mf-line)",
+        }}
+      >
+        <svg width={18} height={18} viewBox="0 0 18 18" fill="none" stroke="var(--mf-text-muted)" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+          <circle cx={8} cy={8} r={5.5} /><path d="M12.2 12.2L16 16" />
+        </svg>
+        <div style={{ flex: 1, color: "var(--mf-text-muted)", fontSize: 13.5, fontFamily: "var(--mf-font-sans)" }}>
+          フェイス・シードを検索
+        </div>
+      </div>
+    </div>
+
     {/* Quiet Feed バナー */}
     <div
       style={{
         margin: "20px 18px 0",
         padding: "24px 22px",
         borderRadius: 16,
-        background: "var(--mf-bg-dark)",
+        background: "var(--mf-brand)",
         position: "relative",
         overflow: "hidden",
       }}
@@ -308,10 +335,10 @@ const EmptyState = () => (
           Quiet Feed
         </div>
       </div>
-      <div style={{ fontSize: 17, lineHeight: 1.55, fontWeight: 700, color: "rgba(248,246,241,0.92)", letterSpacing: 0.2 }}>
+      <div style={{ fontSize: 17, lineHeight: 1.55, fontWeight: 700, color: "#F8F6F1", letterSpacing: 0.2, position: "relative" }}>
         まだ、誰のフェイスも<br />サブスクライブしていない。
       </div>
-      <div style={{ marginTop: 8, fontSize: 12, lineHeight: 1.7, color: "rgba(248,246,241,0.6)" }}>
+      <div style={{ marginTop: 8, fontSize: 12, lineHeight: 1.7, color: "rgba(248,246,241,0.7)", position: "relative" }}>
         気になるフェイスを1つだけ、まず選んでみる。<br />
         通知の重みを大切にする設計です。
       </div>
