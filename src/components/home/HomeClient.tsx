@@ -8,14 +8,18 @@ import { getFaceTitle } from "@/lib/display";
 import FaceFilterBar from "./FaceFilterBar";
 import ActivityFeed from "./ActivityFeed";
 import FaceChip from "@/components/ui/FaceChip";
+import FaceBadge from "@/components/ui/FaceBadge";
+import PostModal from "@/components/ui/PostModal";
 
 const REFERENCE_DATE = new Date("2026-03-31");
 
 const HomeClient = () => {
   const [selectedFaceId, setSelectedFaceId] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const user = userRepository.getCurrentUser();
   const faces = faceRepository.listByUserId(user.id);
+  const defaultFace = faces[0] ?? null;
 
   const today = REFERENCE_DATE;
 
@@ -97,6 +101,51 @@ const HomeClient = () => {
         </div>
       )}
 
+      {/* PC版コンポーズバー（モバイルは MobileComposeBar が担当） */}
+      <div className="hidden md:block" style={{ padding: "14px 18px 0" }}>
+        <button
+          type="button"
+          onClick={() => setIsModalOpen(true)}
+          style={{
+            width: "100%",
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            padding: "10px 14px",
+            borderRadius: 14,
+            background: "var(--mf-surface)",
+            border: "0.5px solid var(--mf-line)",
+            cursor: "pointer",
+            textAlign: "left",
+          }}
+        >
+          {defaultFace && <FaceBadge face={defaultFace} size={30} radius={8} />}
+          <span
+            style={{
+              flex: 1,
+              fontSize: 14,
+              color: "var(--mf-text-faint)",
+              fontFamily: "var(--mf-font-sans)",
+            }}
+          >
+            今、何を書く？
+          </span>
+          <span
+            style={{
+              padding: "5px 14px",
+              borderRadius: 999,
+              background: "var(--mf-accent)",
+              color: "#fff",
+              fontSize: 12,
+              fontWeight: 700,
+              flexShrink: 0,
+            }}
+          >
+            投稿
+          </span>
+        </button>
+      </div>
+
       {/* 最近のシード セクションヘッダー */}
       <div
         style={{
@@ -135,6 +184,7 @@ const HomeClient = () => {
         <ActivityFeed selectedFaceId={selectedFaceId} />
       </div>
 
+      <PostModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
   );
 };
