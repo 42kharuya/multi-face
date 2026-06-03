@@ -299,9 +299,9 @@ const CollectionRail = () => {
                 style={{
                   padding: "5px 10px",
                   borderRadius: 999,
-                  background: i === 0 ? "var(--mf-brand)" : "transparent",
-                  border: i === 0 ? "none" : "1px solid var(--mf-brand)",
-                  color: i === 0 ? "#fff" : "var(--mf-brand)",
+                  background: "transparent",
+                  border: "1px solid var(--mf-brand)",
+                  color: "var(--mf-brand)",
                   fontSize: 11,
                   fontWeight: 700,
                   cursor: "pointer",
