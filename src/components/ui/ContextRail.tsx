@@ -119,17 +119,6 @@ const WritingRail = () => {
         </div>
       </RailCard>
 
-      <RailCard pad="14px">
-        <div style={{ display: "flex", alignItems: "center", gap: 10, color: "var(--mf-text-muted)", fontSize: 13 }}>
-          <svg width={18} height={18} viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
-            <circle cx={8} cy={8} r={5.5} /><path d="M12.2 12.2L16 16" />
-          </svg>
-          すべてを検索
-          <div style={{ marginLeft: "auto", fontSize: 10.5, padding: "2px 6px", background: "var(--mf-surface-tint)", borderRadius: 4, color: "var(--mf-text-sub)", fontWeight: 700 }}>
-            ⌘K
-          </div>
-        </div>
-      </RailCard>
     </div>
   );
 };
@@ -310,9 +299,9 @@ const CollectionRail = () => {
                 style={{
                   padding: "5px 10px",
                   borderRadius: 999,
-                  background: i === 0 ? "var(--mf-brand)" : "transparent",
-                  border: i === 0 ? "none" : "1px solid var(--mf-brand)",
-                  color: i === 0 ? "#fff" : "var(--mf-brand)",
+                  background: "transparent",
+                  border: "1px solid var(--mf-brand)",
+                  color: "var(--mf-brand)",
                   fontSize: 11,
                   fontWeight: 700,
                   cursor: "pointer",
