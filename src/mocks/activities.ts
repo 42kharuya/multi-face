@@ -684,6 +684,8 @@ const face4_3Activities: Activity[] = [
 
 // ─── user-1 の 2025 年分の履歴アクティビティ（カレンダー映え用）───────────
 const face1_historicalActivities: Activity[] = [
+  // 2025年3月
+  { id: "act-h-0", faceId: "face-1-4", userId: "user-1", body: "年度末。今年度を振り返ってみると、思ったよりいろんなことがあった。来年度は少しだけ丁寧に暮らしていきたい。", createdAt: "2025-03-31T22:30:00+09:00" },
   // 2025年4月
   { id: "act-h-1", faceId: "face-1-1", userId: "user-1", body: "『火花』を読了。芸人の世界がこれほど繊細に描かれているとは思わなかった。", createdAt: "2025-04-07T21:00:00+09:00" },
   { id: "act-h-2", faceId: "face-1-4", userId: "user-1", body: "花見。近所の公園の桜がちょうど満開だった。来年もこの景色を見たい。", imageUrls: ["https://picsum.photos/seed/hanami/600/400"], createdAt: "2025-04-05T16:30:00+09:00" },
