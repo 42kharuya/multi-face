@@ -1,12 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { faceRepository } from "@/repositories/face-repository";
 import { userRepository } from "@/repositories/user-repository";
+import { activityRepository } from "@/repositories/activity-repository";
+import { getFaceTitle } from "@/lib/display";
 import FaceFilterBar from "./FaceFilterBar";
 import ActivityFeed from "./ActivityFeed";
 import PostModal from "@/components/ui/PostModal";
 import FaceBadge from "@/components/ui/FaceBadge";
+import FaceChip from "@/components/ui/FaceChip";
 
 const REFERENCE_DATE = new Date("2026-04-01");
 
@@ -19,6 +22,21 @@ const HomeClient = () => {
   const defaultFace = faces[0] ?? null;
 
   const today = REFERENCE_DATE;
+
+  const allActivities = activityRepository.listByUserId(user.id);
+  const mmdd = REFERENCE_DATE.toISOString().slice(5, 10);
+  const onThisDay = useMemo(
+    () =>
+      allActivities.find((a) => {
+        const d = a.createdAt.slice(0, 10);
+        return d.slice(5) === mmdd && !d.startsWith("2026");
+      }),
+    [allActivities, mmdd]
+  );
+  const onThisDayFace = onThisDay ? faceRepository.findById(onThisDay.faceId) : undefined;
+  const yearsAgo = onThisDay
+    ? REFERENCE_DATE.getFullYear() - parseInt(onThisDay.createdAt.slice(0, 4), 10)
+    : 0;
   const weekday = ["日", "月", "火", "水", "木", "金", "土"][today.getDay()];
   const dateLabel = `${today.getMonth() + 1}月${today.getDate()}日 (${weekday})`;
 
@@ -85,6 +103,50 @@ const HomeClient = () => {
           </span>
         </button>
       </div>
+
+      {/* On This Day — PC は ContextRail が担当するため lg:hidden */}
+      {onThisDay && onThisDayFace && (
+        <div className="lg:hidden" style={{ padding: "14px 18px 0" }}>
+          <div
+            style={{
+              padding: "14px 16px",
+              borderRadius: 14,
+              background: "var(--mf-surface)",
+              border: "0.5px solid var(--mf-line)",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: "var(--mf-text-muted)", letterSpacing: 0.6, textTransform: "uppercase" }}>
+                On This Day
+              </span>
+              <span style={{ fontSize: 11, color: "var(--mf-text-muted)" }}>{yearsAgo}年前</span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+              <FaceChip faceId={onThisDayFace.id} title={getFaceTitle(onThisDayFace)} />
+              <span style={{ fontSize: 10.5, color: "var(--mf-text-muted)" }}>
+                {onThisDay.createdAt.slice(0, 10).replace(/-/g, ".")}
+              </span>
+            </div>
+            <p
+              style={{
+                fontSize: 13,
+                lineHeight: 1.65,
+                color: "var(--mf-ink)",
+                margin: 0,
+                overflow: "hidden",
+                display: "-webkit-box",
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: "vertical",
+              }}
+            >
+              {onThisDay.body}
+            </p>
+            <p style={{ marginTop: 8, fontSize: 11, color: "var(--mf-text-muted)", fontStyle: "italic", margin: "8px 0 0" }}>
+              今のあなたは、何と返しますか
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* 最近のシード セクションヘッダー */}
       <div
