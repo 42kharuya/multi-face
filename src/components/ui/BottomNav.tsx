@@ -11,12 +11,12 @@ type NavItem = {
 
 const HomeIcon = ({ active }: { active: boolean }) => (
   <svg width={22} height={22} viewBox="0 0 22 22" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
-    <path d="M3 10L11 3l8 7" />
     <path
-      d="M5 9v9a1 1 0 001 1h4v-4h2v4h4a1 1 0 001-1V9"
+      d="M3 10L11 3L19 10V19H3V10Z"
       fill={active ? "currentColor" : "none"}
       fillOpacity={active ? 0.18 : 0}
     />
+    <path d="M9 19v-5h4v5" />
   </svg>
 );
 
