@@ -70,7 +70,7 @@ const HomeClient = () => {
           >
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
               <span style={{ fontSize: 11, fontWeight: 700, color: "var(--mf-text-muted)", letterSpacing: 0.6, textTransform: "uppercase" }}>
-                On This Day
+                一年前の今日
               </span>
               <span style={{ fontSize: 11, color: "var(--mf-text-muted)" }}>{yearsAgo}年前</span>
             </div>

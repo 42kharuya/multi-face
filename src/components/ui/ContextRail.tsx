@@ -58,7 +58,7 @@ const WritingRail = () => {
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
       {/* On This Day */}
       {onThisDay && onThisDayFace && (
-        <RailCard title="On This Day" action={`${yearsAgo}年前`}>
+        <RailCard title="一年前の今日" action={`${yearsAgo}年前`}>
           <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
             <FaceChip faceId={onThisDayFace.id} title={getFaceTitle(onThisDayFace)} />
             <span style={{ fontSize: 10.5, color: "var(--mf-text-muted)" }}>
