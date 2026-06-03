@@ -3,8 +3,10 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import type { Face } from "@/types/face";
-import { getFaceTitle, getFaceColor, getFaceKanji } from "@/lib/display";
+import { getFaceTitle, getFaceColor, getFaceKanji, createLookupMap } from "@/lib/display";
 import { activityRepository } from "@/repositories/activity-repository";
+import { userRepository } from "@/repositories/user-repository";
+import SeedRow from "@/components/ui/SeedRow";
 import CreateFaceModal from "./CreateFaceModal";
 
 type Props = {
@@ -81,30 +83,22 @@ const FacesClient = ({ initialFaces }: Props) => {
     [faceStats]
   );
 
+  const faceMap = useMemo(() => createLookupMap(faces, (f) => f.id), [faces]);
+  const userMap = useMemo(() => createLookupMap(userRepository.listAll(), (u) => u.id), []);
+
+  const matchingSeeds = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+    const q = searchQuery.toLowerCase();
+    const faceIds = new Set(faces.map((f) => f.id));
+    return activityRepository.listAll()
+      .filter((a) => faceIds.has(a.faceId) && a.body.toLowerCase().includes(q));
+  }, [searchQuery, faces]);
+
   return (
     <main style={{ display: "flex", flexDirection: "column", paddingBottom: 24 }}>
-      {/* ページタイトル */}
-      <div style={{ padding: "4px 18px 14px" }}>
-        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
-          <div
-            style={{
-              fontSize: 22,
-              fontWeight: 700,
-              color: "var(--mf-brand)",
-              letterSpacing: -0.3,
-              fontFamily: "var(--mf-font-sans)",
-            }}
-          >
-            振り返り
-          </div>
-          <div style={{ fontSize: 12, color: "var(--mf-text-sub)", fontWeight: 500 }}>
-            {faces.length} フェイス · {totalSeeds} シード
-          </div>
-        </div>
-      </div>
 
       {/* 検索バー */}
-      <div style={{ padding: "0 18px 8px" }}>
+      <div style={{ padding: "20px 18px 8px" }}>
         <div
           style={{
             display: "flex",
@@ -124,7 +118,7 @@ const FacesClient = ({ initialFaces }: Props) => {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="自分のシードを全文検索"
+            placeholder="自分のフェイス・シードを検索"
             style={{
               flex: 1,
               border: "none",
@@ -149,6 +143,91 @@ const FacesClient = ({ initialFaces }: Props) => {
         </div>
       </div>
 
+      {/* 検索結果 */}
+      {searchQuery.trim() && (
+        <div style={{ padding: "0 0 16px" }}>
+          {/* フェイス結果 */}
+          <div style={{ padding: "12px 20px 6px" }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "var(--mf-text-muted)", letterSpacing: 0.5, textTransform: "uppercase" }}>
+              フェイス ({filteredFaces.length})
+            </span>
+          </div>
+          {filteredFaces.length === 0 ? (
+            <p style={{ fontSize: 12.5, color: "var(--mf-text-muted)", padding: "4px 20px" }}>該当なし</p>
+          ) : (
+            <div style={{ padding: "0 20px", display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12 }}>
+              {filteredFaces.map((face) => {
+                const stats = faceStats.get(face.id);
+                const color = getFaceColor(face.id);
+                return (
+                  <Link key={face.id} href={`/faces/${face.id}`} style={{ textDecoration: "none" }}>
+                    <div style={{ height: 200, borderRadius: 14, overflow: "hidden", background: "var(--mf-surface)", border: "0.5px solid var(--mf-line)", display: "flex", flexDirection: "column" }}>
+                      <div style={{
+                        height: 130, flexShrink: 0,
+                        background: face.imageUrl ? undefined : color,
+                        backgroundImage: face.imageUrl ? `url(${face.imageUrl})` : undefined,
+                        backgroundSize: "cover", backgroundPosition: "center",
+                        padding: 10, display: "flex", alignItems: "flex-start", justifyContent: "flex-end",
+                      }}>
+                        {face.isPrivate && (
+                          <div style={{ display: "flex", alignItems: "center", gap: 3, padding: "3px 7px", background: "rgba(20,24,36,0.32)", borderRadius: 999, backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)" }}>
+                            <svg width={10} height={10} viewBox="0 0 14 14" fill="none" stroke="#fff" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+                              <rect x={2.5} y={6} width={9} height={6.5} rx={1.2} /><path d="M4.5 6V4a2.5 2.5 0 015 0v2" />
+                            </svg>
+                            <span style={{ fontSize: 9, color: "#fff", fontWeight: 700, letterSpacing: 0.3 }}>非公開</span>
+                          </div>
+                        )}
+                      </div>
+                      <div style={{ padding: "11px 13px 12px", flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                          <div style={{ fontSize: 16, fontWeight: 700, color: "var(--mf-brand)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>
+                            {getFaceTitle(face)}
+                          </div>
+                          <span style={{ flexShrink: 0 }}>
+                            <b style={{ color: "var(--mf-text)", fontWeight: 700, fontSize: 17 }}>{stats?.total ?? 0}</b>
+                            <span style={{ fontSize: 10, color: "var(--mf-text-muted)", marginLeft: 2 }}>シード</span>
+                          </span>
+                        </div>
+                        <div style={{ fontSize: 10.5, color: "var(--mf-text-muted)" }}>
+                          {stats?.lastDate ? stats.lastDate.replace(/-/g, "/") : "—"}
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+
+          {/* シード結果 */}
+          <div style={{ padding: "16px 20px 6px" }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "var(--mf-text-muted)", letterSpacing: 0.5, textTransform: "uppercase" }}>
+              シード ({matchingSeeds.length})
+            </span>
+          </div>
+          {matchingSeeds.length === 0 ? (
+            <p style={{ fontSize: 12.5, color: "var(--mf-text-muted)", padding: "4px 20px" }}>該当なし</p>
+          ) : (
+            <div style={{ padding: "0 20px" }}>
+              {matchingSeeds.map((act) => {
+                const face = faceMap.get(act.faceId);
+                const owner = userMap.get(act.userId);
+                if (!face) return null;
+                return (
+                  <SeedRow
+                    key={act.id}
+                    activity={act}
+                    face={face}
+                    handle={owner?.handle}
+                  />
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {!searchQuery.trim() && <>
       {/* ソートコントロール */}
       <div
         style={{
@@ -313,7 +392,7 @@ const FacesClient = ({ initialFaces }: Props) => {
           style={{
             padding: "0 20px 32px",
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))",
+            gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
             gap: 12,
           }}
         >
@@ -329,7 +408,7 @@ const FacesClient = ({ initialFaces }: Props) => {
               >
                 <div
                   style={{
-                    height: 156,
+                    height: 200,
                     borderRadius: 14,
                     overflow: "hidden",
                     background: "var(--mf-surface)",
@@ -339,36 +418,22 @@ const FacesClient = ({ initialFaces }: Props) => {
                     flexDirection: "column",
                   }}
                 >
-                  {/* カラーバンド (56px) */}
+                  {/* 画像エリア */}
                   <div
                     style={{
-                      height: 56,
-                      background: color,
-                      padding: 12,
+                      height: 130,
+                      background: face.imageUrl ? undefined : color,
+                      backgroundImage: face.imageUrl ? `url(${face.imageUrl})` : undefined,
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                      padding: 10,
                       display: "flex",
                       alignItems: "flex-start",
-                      justifyContent: "space-between",
+                      justifyContent: "flex-end",
                       flexShrink: 0,
                     }}
                   >
-                    <div
-                      style={{
-                        width: 30,
-                        height: 30,
-                        borderRadius: 8,
-                        background: "rgba(255,255,255,0.22)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontFamily: "var(--mf-font-serif)",
-                        fontSize: 14,
-                        fontWeight: 500,
-                        color: "#fff",
-                      }}
-                    >
-                      {kanji}
-                    </div>
-                    {face.isPrivate ? (
+                    {face.isPrivate && (
                       <div style={{
                         display: "flex", alignItems: "center", gap: 3,
                         padding: "3px 7px",
@@ -383,19 +448,15 @@ const FacesClient = ({ initialFaces }: Props) => {
                         </svg>
                         <span style={{ fontSize: 9, color: "#fff", fontWeight: 700, letterSpacing: 0.3 }}>非公開</span>
                       </div>
-                    ) : (
-                      <svg width={16} height={16} viewBox="0 0 18 18" fill="rgba(255,255,255,0.85)">
-                        <circle cx={3} cy={9} r={1.5} /><circle cx={9} cy={9} r={1.5} /><circle cx={15} cy={9} r={1.5} />
-                      </svg>
                     )}
                   </div>
 
                   {/* カード本文 */}
                   <div style={{ padding: "11px 13px 12px", flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-                    <div>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
                       <div
                         style={{
-                          fontSize: 14.5,
+                          fontSize: 16,
                           fontWeight: 700,
                           color: "var(--mf-brand)",
                           overflow: "hidden",
@@ -403,42 +464,19 @@ const FacesClient = ({ initialFaces }: Props) => {
                           whiteSpace: "nowrap",
                           letterSpacing: 0.1,
                           lineHeight: 1.2,
+                          flex: 1,
+                          minWidth: 0,
                         }}
                       >
                         {getFaceTitle(face)}
                       </div>
-
-                      {/* 統計行 */}
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "baseline",
-                          gap: 6,
-                          marginTop: 5,
-                        }}
-                      >
-                        <span>
-                          <b style={{ color: "var(--mf-text)", fontWeight: 700, fontSize: 17 }}>
-                            {stats?.total ?? 0}
-                          </b>
-                          <span style={{ fontSize: 10, color: "var(--mf-text-muted)", marginLeft: 2 }}>シード</span>
-                        </span>
-                        {stats && stats.monthly > 0 && (
-                          <span
-                            style={{
-                              marginLeft: "auto",
-                              fontSize: 10.5,
-                              color,
-                              fontWeight: 700,
-                            }}
-                          >
-                            +{stats.monthly}/月
-                          </span>
-                        )}
-                      </div>
+                      <span style={{ flexShrink: 0, textAlign: "right" }}>
+                        <b style={{ color: "var(--mf-text)", fontWeight: 700, fontSize: 17 }}>
+                          {stats?.total ?? 0}
+                        </b>
+                        <span style={{ fontSize: 10, color: "var(--mf-text-muted)", marginLeft: 2 }}>シード</span>
+                      </span>
                     </div>
-
-                    {/* 最終投稿日 */}
                     <div style={{ fontSize: 10.5, color: "var(--mf-text-muted)" }}>
                       {stats?.lastDate ? stats.lastDate.replace(/-/g, "/") : "—"}
                     </div>
@@ -496,16 +534,21 @@ const FacesClient = ({ initialFaces }: Props) => {
                       width: 44,
                       height: 44,
                       borderRadius: 12,
-                      background: color,
-                      display: "flex",
+                      background: face.imageUrl ? undefined : color,
+                      backgroundImage: face.imageUrl ? `url(${face.imageUrl})` : undefined,
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                      flexShrink: 0,
+                      display: face.imageUrl ? "block" : "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      flexShrink: 0,
                     }}
                   >
-                    <span style={{ fontFamily: "var(--mf-font-serif)", fontSize: 18, fontWeight: 600, color: "#fff" }}>
-                      {kanji}
-                    </span>
+                    {!face.imageUrl && (
+                      <span style={{ fontFamily: "var(--mf-font-serif)", fontSize: 18, fontWeight: 600, color: "#fff" }}>
+                        {kanji}
+                      </span>
+                    )}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 14, fontWeight: 700, color: "var(--mf-brand)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
@@ -547,6 +590,8 @@ const FacesClient = ({ initialFaces }: Props) => {
           </button>
         </div>
       )}
+
+      </>}
 
       <CreateFaceModal
         isOpen={isModalOpen}

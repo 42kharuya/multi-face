@@ -196,6 +196,7 @@ const SeedRow = ({
               borderRadius: 14,
               overflow: "hidden",
               border: "0.5px solid var(--mf-line-soft)",
+              maxWidth: "50%",
             }}
           >
             {activity.imageUrls.slice(0, 4).map((url, i) => (

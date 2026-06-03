@@ -33,7 +33,7 @@ const FaceNavItem = ({ face, activeFaceId, onClick }: Props) => {
           transition: "background 0.15s",
         }}
       >
-        <FaceBadge face={face} size={26} radius={7} />
+        <FaceBadge face={face} size={34} radius={9} />
         <span
           style={{
             flex: 1,
