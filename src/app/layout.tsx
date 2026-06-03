@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import BottomNav from "@/components/ui/BottomNav";
+import MobileComposeBar from "@/components/ui/MobileComposeBar";
 import SideNav from "@/components/ui/SideNav";
 import AppHeader from "@/components/ui/AppHeader";
 import ContextRail from "@/components/ui/ContextRail";
@@ -34,7 +35,7 @@ export default function RootLayout({
               <AppHeader />
               <div className="flex flex-1 min-h-0 overflow-hidden">
                 <main
-                  className="flex-1 min-w-0 overflow-y-auto pb-16 md:pb-0"
+                  className="flex-1 min-w-0 overflow-y-auto pb-36 md:pb-0"
                   style={{ borderRight: "0.5px solid var(--mf-line)" }}
                 >
                   {children}
@@ -43,6 +44,7 @@ export default function RootLayout({
               </div>
             </div>
           </div>
+          <MobileComposeBar />
           <BottomNav />
         </DetailPanelProvider>
       </body>

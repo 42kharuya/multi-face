@@ -7,19 +7,15 @@ import { activityRepository } from "@/repositories/activity-repository";
 import { getFaceTitle } from "@/lib/display";
 import FaceFilterBar from "./FaceFilterBar";
 import ActivityFeed from "./ActivityFeed";
-import PostModal from "@/components/ui/PostModal";
-import FaceBadge from "@/components/ui/FaceBadge";
 import FaceChip from "@/components/ui/FaceChip";
 
 const REFERENCE_DATE = new Date("2026-04-01");
 
 const HomeClient = () => {
   const [selectedFaceId, setSelectedFaceId] = useState<string | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const user = userRepository.getCurrentUser();
   const faces = faceRepository.listByUserId(user.id);
-  const defaultFace = faces[0] ?? null;
 
   const today = REFERENCE_DATE;
 
@@ -55,53 +51,6 @@ const HomeClient = () => {
             {dateLabel}
           </div>
         </div>
-      </div>
-
-      {/* インラインコンポーズ */}
-      <div style={{ padding: "0 18px" }}>
-        <button
-          type="button"
-          onClick={() => setIsModalOpen(true)}
-          style={{
-            width: "100%",
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-            padding: "10px 14px",
-            borderRadius: 16,
-            background: "var(--mf-surface)",
-            border: "0.5px solid var(--mf-line)",
-            cursor: "pointer",
-            textAlign: "left",
-          }}
-        >
-          {defaultFace && (
-            <FaceBadge face={defaultFace} size={32} radius={9} />
-          )}
-          <span
-            style={{
-              flex: 1,
-              fontSize: 14,
-              color: "var(--mf-text-faint)",
-              fontFamily: "var(--mf-font-sans)",
-            }}
-          >
-            今、何を書く？
-          </span>
-          <span
-            style={{
-              padding: "5px 14px",
-              borderRadius: 999,
-              background: "var(--mf-accent)",
-              color: "#fff",
-              fontSize: 12,
-              fontWeight: 700,
-              flexShrink: 0,
-            }}
-          >
-            投稿
-          </span>
-        </button>
       </div>
 
       {/* On This Day — PC は ContextRail が担当するため lg:hidden */}
@@ -186,10 +135,6 @@ const HomeClient = () => {
         <ActivityFeed selectedFaceId={selectedFaceId} />
       </div>
 
-      <PostModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-      />
     </div>
   );
 };
