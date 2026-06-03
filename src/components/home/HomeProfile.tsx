@@ -12,22 +12,12 @@ const HomeProfile = () => {
     <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: "20px 28px 12px" }}>
       {/* アバター・名前 */}
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <div
-          style={{
-            width: 44,
-            height: 44,
-            borderRadius: "50%",
-            background: "var(--mf-brand)",
-            color: "#fff",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: 18,
-            fontWeight: 700,
-            flexShrink: 0,
-          }}
-        >
-          {user.name.slice(0, 1)}
+        <div style={{ width: 44, height: 44, borderRadius: "50%", overflow: "hidden", flexShrink: 0 }}>
+          <img
+            src={user.avatarUrl}
+            alt={user.name}
+            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+          />
         </div>
         <div>
           <div style={{ fontSize: 16, fontWeight: 700, color: "var(--mf-brand)" }}>

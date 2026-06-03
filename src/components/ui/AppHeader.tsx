@@ -64,19 +64,18 @@ const AppHeader = () => {
               width: 30,
               height: 30,
               borderRadius: "50%",
-              background: "var(--mf-brand)",
-              color: "#F8F6F1",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 12,
-              fontWeight: 700,
+              overflow: "hidden",
               flexShrink: 0,
               border: "none",
               cursor: "pointer",
+              padding: 0,
             }}
           >
-            {user.name.slice(0, 1)}
+            <img
+              src={user.avatarUrl}
+              alt={user.name}
+              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+            />
           </button>
         </div>
       </header>

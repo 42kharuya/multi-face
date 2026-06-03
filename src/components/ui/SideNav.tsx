@@ -272,27 +272,13 @@ const SideNav = () => {
             width: "100%",
           }}
         >
-          {faces[0] ? (
-            <FaceBadge face={faces[0]} size={36} radius={999} />
-          ) : (
-            <div
-              style={{
-                width: 36,
-                height: 36,
-                borderRadius: "50%",
-                background: "var(--mf-brand)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#fff",
-                fontSize: 14,
-                fontWeight: 600,
-                flexShrink: 0,
-              }}
-            >
-              {currentUser.name.slice(0, 1)}
-            </div>
-          )}
+          <div style={{ width: 44, height: 44, borderRadius: "50%", overflow: "hidden", flexShrink: 0 }}>
+            <img
+              src={currentUser.avatarUrl}
+              alt={currentUser.name}
+              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+            />
+          </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div
               style={{
