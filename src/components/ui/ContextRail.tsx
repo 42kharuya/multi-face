@@ -264,7 +264,7 @@ const CollectionRail = () => {
       )}
 
       {/* おすすめフェイス */}
-      <RailCard title="おすすめ">
+      <RailCard title="人気のフェイス">
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {RECOMMENDED_FACES_MOCK.map((rec, i) => (
             <div key={rec.handle} style={{ display: "flex", alignItems: "center", gap: 10 }}>
