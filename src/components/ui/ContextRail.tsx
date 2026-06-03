@@ -2,16 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useDetailPanel } from "@/lib/detail-panel-context";
 import { activityRepository } from "@/repositories/activity-repository";
 import { faceRepository } from "@/repositories/face-repository";
 import { userRepository } from "@/repositories/user-repository";
 import { subscriptionRepository } from "@/repositories/subscription-repository";
-import { getFaceTitle, getFaceColor, getFaceKanji } from "@/lib/display";
+import { getFaceTitle, getFaceColor } from "@/lib/display";
 import { formatRelativeTime } from "@/lib/format-relative-time";
 import type { Face } from "@/types/face";
-import ActivityDetail from "./ActivityDetail";
-import FaceDetail from "./FaceDetail";
 import FaceBadge from "./FaceBadge";
 import FaceChip from "./FaceChip";
 import RailCard from "./RailCard";
@@ -336,24 +333,8 @@ const CollectionRail = () => {
 // ── ContextRail（メイン） ───────────────────────────────────────
 const ContextRail = () => {
   const pathname = usePathname();
-  const { state } = useDetailPanel();
-
-  const hasDetail = state.type === "activity" || state.type === "face";
-
-  const contentKey = hasDetail
-    ? state.type === "activity"
-      ? `activity-${state.activityId}`
-      : `face-${state.faceId}`
-    : `page-${pathname}`;
 
   const renderContent = () => {
-    if (state.type === "activity") {
-      return <ActivityDetail activityId={state.activityId} />;
-    }
-    if (state.type === "face") {
-      return <FaceDetail faceId={state.faceId} />;
-    }
-
     if (pathname === "/faces" || pathname.startsWith("/faces/")) {
       return <ReflectionRail />;
     }
@@ -368,10 +349,10 @@ const ContextRail = () => {
       className="hidden lg:flex flex-col shrink-0 overflow-y-auto mf-scroll"
       style={{
         width: 340,
-        padding: hasDetail ? 0 : "24px 20px 24px 0",
+        padding: "24px 20px 24px 0",
       }}
     >
-      <div key={contentKey} style={{ flex: 1 }}>
+      <div key={`page-${pathname}`} style={{ flex: 1 }}>
         {renderContent()}
       </div>
     </aside>

@@ -9,13 +9,11 @@ import { subscriptionRepository } from "@/repositories/subscription-repository";
 import SeedRow from "@/components/ui/SeedRow";
 import DateBar from "@/components/ui/DateBar";
 import FaceBadge from "@/components/ui/FaceBadge";
-import { useDetailPanel } from "@/lib/detail-panel-context";
 import { createLookupMap, getFaceTitle } from "@/lib/display";
 
 type Tab = "timeline" | "subscriptions";
 
 const SubscriptionFeed = () => {
-  const { openActivity } = useDetailPanel();
   const [activeTab, setActiveTab] = useState<Tab>("timeline");
 
   const subscribedFaceIds = subscriptionRepository.getSubscribedFaceIds();
@@ -199,7 +197,6 @@ const SubscriptionFeed = () => {
                         activity={activity}
                         face={face}
                         handle={owner?.handle}
-                        onClick={() => openActivity(activity.id)}
                         noBorder={i === acts.length - 1}
                       />
                     );

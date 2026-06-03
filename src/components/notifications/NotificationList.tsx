@@ -8,7 +8,6 @@ import { activityRepository } from "@/repositories/activity-repository";
 import { type Notification } from "@/types/notification";
 import { formatRelativeTime } from "@/lib/format-relative-time";
 import { createLookupMap, getFaceTitle, getFaceColor } from "@/lib/display";
-import { useDetailPanel } from "@/lib/detail-panel-context";
 import FaceBadge from "@/components/ui/FaceBadge";
 import DateBar from "@/components/ui/DateBar";
 
@@ -33,12 +32,8 @@ type NotifItemProps = {
 };
 
 const NotifItem = ({ notification, faceName, faceId, handle, preview, activityId }: NotifItemProps) => {
-  const { openActivity, state } = useDetailPanel();
   const isUnread = notification.createdAt >= UNREAD_CUTOFF;
   const isLink = notification.type === "link";
-
-  const isSelected =
-    state.type === "activity" && activityId !== undefined && state.activityId === activityId;
 
   const typeMeta = isLink
     ? { label: "リンク", bg: "rgba(30,42,74,0.10)", color: "var(--mf-brand)" }
@@ -50,23 +45,14 @@ const NotifItem = ({ notification, faceName, faceId, handle, preview, activityId
 
   return (
     <div
-      onClick={() => { if (activityId) openActivity(activityId); }}
-      role={activityId ? "button" : undefined}
-      tabIndex={activityId ? 0 : undefined}
-      onKeyDown={activityId ? (e) => { if (e.key === "Enter") openActivity(activityId!); } : undefined}
       style={{
         padding: "12px 18px",
-        background: isSelected
-          ? "rgba(30,42,74,0.06)"
-          : isUnread
-          ? "rgba(212,146,42,0.05)"
-          : "transparent",
+        background: isUnread ? "rgba(212,146,42,0.05)" : "transparent",
         borderBottom: "0.5px solid var(--mf-line-soft)",
         display: "flex",
         gap: 12,
         alignItems: "flex-start",
         position: "relative",
-        cursor: activityId ? "pointer" : "default",
       }}
     >
       {/* 未読ドット */}

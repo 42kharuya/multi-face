@@ -6,7 +6,6 @@ import { type Face } from "@/types/face";
 import SeedRow from "@/components/ui/SeedRow";
 import FaceBadge from "@/components/ui/FaceBadge";
 import { getFaceTitle } from "@/lib/display";
-import { useDetailPanel } from "@/lib/detail-panel-context";
 
 export type SearchActivityResultItem = {
   activity: Activity;
@@ -27,8 +26,6 @@ const SearchResults = ({
   faceResults,
   subscribedFaceIds,
 }: SearchResultsProps) => {
-  const { state, openActivity, openFace } = useDetailPanel();
-
   if (!query) {
     return (
       <div
@@ -97,15 +94,9 @@ const SearchResults = ({
           <ul style={{ display: "flex", flexDirection: "column", gap: 6, listStyle: "none", padding: 0, margin: 0 }}>
             {faceResults.map((face) => {
               const isSubscribed = subscribedFaceIds.includes(face.id);
-              const isSelected = state.type === "face" && state.faceId === face.id;
               return (
                 <li
                   key={face.id}
-                  onClick={() => {
-                    if (typeof window !== "undefined" && window.innerWidth >= 768) {
-                      openFace(face.id);
-                    }
-                  }}
                   style={{
                     display: "flex",
                     alignItems: "center",
@@ -113,12 +104,8 @@ const SearchResults = ({
                     gap: 12,
                     padding: "12px 14px",
                     borderRadius: 12,
-                    background: isSelected
-                      ? "rgba(30,42,74,0.06)"
-                      : "var(--mf-surface-card)",
-                    border: `0.5px solid ${isSelected ? "var(--mf-brand)" : "var(--mf-line)"}`,
-                    cursor: "pointer",
-                    transition: "background 0.15s",
+                    background: "var(--mf-surface-card)",
+                    border: "0.5px solid var(--mf-line)",
                   }}
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
@@ -205,7 +192,6 @@ const SearchResults = ({
                 key={activity.id}
                 activity={activity}
                 face={face}
-                onClick={() => openActivity(activity.id)}
                 noBorder={i === activityResults.length - 1}
               />
             ))}

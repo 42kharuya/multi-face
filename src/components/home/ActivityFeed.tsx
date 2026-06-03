@@ -3,7 +3,6 @@
 import { activityRepository } from "@/repositories/activity-repository";
 import { faceRepository } from "@/repositories/face-repository";
 import { userRepository } from "@/repositories/user-repository";
-import { useDetailPanel } from "@/lib/detail-panel-context";
 import { createLookupMap } from "@/lib/display";
 import SeedRow from "@/components/ui/SeedRow";
 
@@ -12,7 +11,6 @@ type ActivityFeedProps = {
 };
 
 const ActivityFeed = ({ selectedFaceId }: ActivityFeedProps) => {
-  const { openActivity } = useDetailPanel();
   const user = userRepository.getCurrentUser();
 
   const allActivities = activityRepository.listByUserId(user.id);
@@ -53,7 +51,6 @@ const ActivityFeed = ({ selectedFaceId }: ActivityFeedProps) => {
             key={activity.id}
             activity={activity}
             face={face}
-            onClick={() => openActivity(activity.id)}
             noBorder={index === displayActivities.length - 1}
           />
         );
