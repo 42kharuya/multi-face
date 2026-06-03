@@ -26,12 +26,13 @@ type NotifItemProps = {
   notification: Notification;
   faceName?: string;
   faceId?: string;
+  faceImageUrl?: string;
   handle?: string;
   preview: string;
   activityId?: string;
 };
 
-const NotifItem = ({ notification, faceName, faceId, handle, preview, activityId }: NotifItemProps) => {
+const NotifItem = ({ notification, faceName, faceId, faceImageUrl, handle, preview, activityId }: NotifItemProps) => {
   const isUnread = notification.createdAt >= UNREAD_CUTOFF;
   const isLink = notification.type === "link";
 
@@ -40,7 +41,7 @@ const NotifItem = ({ notification, faceName, faceId, handle, preview, activityId
     : { label: "更新", bg: "rgba(212,146,42,0.10)", color: "var(--mf-accent)" };
 
   const mockFace = faceId
-    ? { id: faceId, name: faceName ?? "", userId: "", isPrivate: false }
+    ? { id: faceId, name: faceName ?? "", userId: "", isPrivate: false, imageUrl: faceImageUrl }
     : null;
 
   return (
@@ -234,6 +235,7 @@ const NotificationList = () => {
                     notification={notification}
                     faceName={linkedFace ? getFaceTitle(linkedFace) : undefined}
                     faceId={linkedFace?.id}
+                    faceImageUrl={linkedFace?.imageUrl}
                     handle={fromUser.handle}
                     preview={activity?.body ?? "リンクされたシードです"}
                     activityId={notification.activityId}
@@ -248,6 +250,7 @@ const NotificationList = () => {
                   notification={notification}
                   faceName={face ? getFaceTitle(face) : undefined}
                   faceId={face?.id}
+                  faceImageUrl={face?.imageUrl}
                   handle={fromUser.handle}
                   preview={face ? `${getFaceTitle(face)} に新しいシードが投稿されました` : "サブスク中のフェイスが更新されました"}
                 />
