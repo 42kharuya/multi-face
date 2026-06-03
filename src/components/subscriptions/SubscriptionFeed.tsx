@@ -15,6 +15,7 @@ type Tab = "timeline" | "subscriptions";
 
 const SubscriptionFeed = () => {
   const [activeTab, setActiveTab] = useState<Tab>("timeline");
+  const [selectedFaceId, setSelectedFaceId] = useState<string | null>(null);
 
   const subscribedFaceIds = subscriptionRepository.getSubscribedFaceIds();
   const subscribedActivities = activityRepository.listByFaceIds(subscribedFaceIds);
@@ -31,11 +32,19 @@ const SubscriptionFeed = () => {
   const faceMap = createLookupMap(subscribedFaces, (face) => face.id);
   const userMap = createLookupMap(userRepository.listAll(), (user) => user.id);
 
+  const filteredActivities = useMemo(
+    () =>
+      selectedFaceId
+        ? subscribedActivities.filter((a) => a.faceId === selectedFaceId)
+        : subscribedActivities,
+    [subscribedActivities, selectedFaceId]
+  );
+
   // タイムラインを日付でグループ化
   const grouped = useMemo(() => {
     const groups: { dateKey: string; activities: typeof subscribedActivities }[] = [];
     let lastKey = "";
-    for (const act of subscribedActivities) {
+    for (const act of filteredActivities) {
       const dateKey = act.createdAt.slice(0, 10);
       if (dateKey !== lastKey) {
         groups.push({ dateKey, activities: [act] });
@@ -45,7 +54,7 @@ const SubscriptionFeed = () => {
       }
     }
     return groups;
-  }, [subscribedActivities]);
+  }, [filteredActivities]);
 
   const TABS: { key: Tab; label: string }[] = [
     { key: "timeline", label: "タイムライン" },
@@ -144,10 +153,13 @@ const SubscriptionFeed = () => {
             >
               {subscribedFaces.map((face) => {
                 const hasUnread = subscribedActivities.some((a) => a.faceId === face.id);
+                const isSelected = selectedFaceId === face.id;
                 const owner = userMap.get(face.userId);
                 return (
-                  <div
+                  <button
                     key={face.id}
+                    type="button"
+                    onClick={() => setSelectedFaceId(isSelected ? null : face.id)}
                     style={{
                       display: "flex",
                       flexDirection: "column",
@@ -155,12 +167,20 @@ const SubscriptionFeed = () => {
                       gap: 6,
                       flexShrink: 0,
                       width: 52,
+                      background: "none",
+                      border: "none",
+                      padding: 0,
+                      cursor: "pointer",
+                      opacity: selectedFaceId && !isSelected ? 0.4 : 1,
+                      transition: "opacity 0.15s",
                     }}
                   >
                     <div
                       style={{
                         borderRadius: 12,
-                        boxShadow: hasUnread
+                        boxShadow: isSelected
+                          ? "0 0 0 2px var(--mf-bg-light), 0 0 0 3.5px var(--mf-brand)"
+                          : hasUnread
                           ? "0 0 0 2px var(--mf-bg-light), 0 0 0 3.5px var(--mf-accent)"
                           : "none",
                         flexShrink: 0,
@@ -171,7 +191,8 @@ const SubscriptionFeed = () => {
                     <span
                       style={{
                         fontSize: 10,
-                        color: "var(--mf-text-sub)",
+                        color: isSelected ? "var(--mf-brand)" : "var(--mf-text-sub)",
+                        fontWeight: isSelected ? 700 : 400,
                         maxWidth: 52,
                         overflow: "hidden",
                         textOverflow: "ellipsis",
@@ -181,14 +202,14 @@ const SubscriptionFeed = () => {
                     >
                       {owner?.handle ?? getFaceTitle(face)}
                     </span>
-                  </div>
+                  </button>
                 );
               })}
             </div>
           )}
 
           {/* タイムライン */}
-          {subscribedActivities.length === 0 ? (
+          {filteredActivities.length === 0 ? (
             <EmptyState />
           ) : (
             <div style={{ padding: "0 28px" }}>
