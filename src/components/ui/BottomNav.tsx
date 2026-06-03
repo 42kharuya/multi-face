@@ -9,16 +9,14 @@ type NavItem = {
   icon: (active: boolean) => React.ReactNode;
 };
 
-const PencilIcon = ({ active }: { active: boolean }) => (
-  <svg width={22} height={22} viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
-    {active ? (
-      <path d="M3 17l1-3.5L13 4.5l3.5 3.5L7.5 17H3z" fill="currentColor" />
-    ) : (
-      <>
-        <path d="M3 17l1-3.5L13 4.5l3.5 3.5L7.5 17H3z" />
-        <path d="M12 5.5l3.5 3.5" />
-      </>
-    )}
+const HomeIcon = ({ active }: { active: boolean }) => (
+  <svg width={22} height={22} viewBox="0 0 22 22" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 10L11 3l8 7" />
+    <path
+      d="M5 9v9a1 1 0 001 1h4v-4h2v4h4a1 1 0 001-1V9"
+      fill={active ? "currentColor" : "none"}
+      fillOpacity={active ? 0.18 : 0}
+    />
   </svg>
 );
 
@@ -41,7 +39,7 @@ const NAV_ITEMS: NavItem[] = [
   {
     href: "/",
     label: "Home",
-    icon: (active) => <PencilIcon active={active} />,
+    icon: (active) => <HomeIcon active={active} />,
   },
   {
     href: "/faces",

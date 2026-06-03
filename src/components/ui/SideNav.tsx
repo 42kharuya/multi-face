@@ -25,16 +25,14 @@ type NavItem = {
 
 const UNREAD_CUTOFF = "2026-03-25";
 
-const PencilIcon = ({ active }: { active: boolean }) => (
-  <svg width={22} height={22} viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
-    {active ? (
-      <path d="M3 17l1-3.5L13 4.5l3.5 3.5L7.5 17H3z" fill="currentColor" />
-    ) : (
-      <>
-        <path d="M3 17l1-3.5L13 4.5l3.5 3.5L7.5 17H3z" />
-        <path d="M12 5.5l3.5 3.5" />
-      </>
-    )}
+const HomeIcon = ({ active }: { active: boolean }) => (
+  <svg width={22} height={22} viewBox="0 0 22 22" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 10L11 3l8 7" />
+    <path
+      d="M5 9v9a1 1 0 001 1h4v-4h2v4h4a1 1 0 001-1V9"
+      fill={active ? "currentColor" : "none"}
+      fillOpacity={active ? 0.18 : 0}
+    />
   </svg>
 );
 
@@ -76,7 +74,7 @@ const SideNav = () => {
   const subscribedCount = subscriptionRepository.getSubscribedFaceIds().length;
 
   const NAV_ITEMS: NavItem[] = [
-    { href: "/",             label: "Home",         jp: "ホーム",  icon: (a) => <PencilIcon active={a} /> },
+    { href: "/",             label: "Home",         jp: "ホーム",  icon: (a) => <HomeIcon active={a} /> },
     { href: "/faces",        label: "Reflection",   jp: "振り返り", icon: (a) => <LayersIcon active={a} /> },
     { href: "/subscriptions",label: "Collection",   jp: "蒐集",    icon: (a) => <CompassIcon active={a} />, count: subscribedCount > 0 ? 3 : undefined },
     { href: "/notifications",label: "Notifications",jp: "通知",    icon: (a) => <BellIcon active={a} />, count: unreadNotifCount > 0 ? unreadNotifCount : undefined },
