@@ -21,19 +21,6 @@ const WritingRail = () => {
   const user = userRepository.getCurrentUser();
   const allActivities = activityRepository.listByUserId(user.id);
 
-  const thisMonth = REFERENCE_DATE.toISOString().slice(0, 7);
-  const monthlyActs = allActivities.filter((a) => a.createdAt.startsWith(thisMonth));
-  const monthlySeeds = monthlyActs.length;
-  const monthlyFaces = new Set(monthlyActs.map((a) => a.faceId)).size;
-
-  const dateSet = new Set(allActivities.map((a) => a.createdAt.slice(0, 10)));
-  let streak = 0;
-  const cur = new Date(REFERENCE_DATE);
-  while (dateSet.has(cur.toISOString().slice(0, 10))) {
-    streak++;
-    cur.setDate(cur.getDate() - 1);
-  }
-
   // On This Day: 同じ月日の過去アクティビティ
   const mmdd = REFERENCE_DATE.toISOString().slice(5, 10);
   const onThisDay = allActivities.find((a) => {
@@ -44,15 +31,6 @@ const WritingRail = () => {
   const yearsAgo = onThisDay
     ? REFERENCE_DATE.getFullYear() - parseInt(onThisDay.createdAt.slice(0, 4), 10)
     : 0;
-
-  // 月間バーチャート（当月の日別シード数、31本）
-  const daysInMonth = 31;
-  const dailyCounts = Array.from({ length: daysInMonth }, (_, i) => {
-    const day = String(i + 1).padStart(2, "0");
-    const key = `${thisMonth}-${day}`;
-    return monthlyActs.filter((a) => a.createdAt.startsWith(key)).length;
-  });
-  const maxCount = Math.max(...dailyCounts, 1);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
@@ -84,41 +62,6 @@ const WritingRail = () => {
           </p>
         </RailCard>
       )}
-
-      {/* 今月の記録 + バーチャート */}
-      <RailCard title="今月の記録">
-        <div style={{ display: "flex", gap: 18, marginBottom: 14 }}>
-          {[
-            { n: String(monthlySeeds), l: "シード" },
-            { n: String(streak), l: "日連続" },
-            { n: String(monthlyFaces), l: "フェイス" },
-          ].map((s) => (
-            <div key={s.l} style={{ textAlign: "center" }}>
-              <div style={{ fontSize: 22, fontWeight: 700, color: "var(--mf-brand)", fontFamily: "var(--mf-font-sans)" }}>
-                {s.n}
-              </div>
-              <div style={{ fontSize: 11, color: "var(--mf-text-muted)", marginTop: 2 }}>{s.l}</div>
-            </div>
-          ))}
-        </div>
-        {/* バーチャート */}
-        <div style={{ display: "flex", alignItems: "flex-end", gap: 2, height: 40 }}>
-          {dailyCounts.map((count, i) => (
-            <div
-              key={i}
-              style={{
-                flex: 1,
-                height: count === 0 ? 2 : `${Math.round((count / maxCount) * 100)}%`,
-                background: count === 0 ? "var(--mf-line)" : "var(--mf-accent)",
-                borderRadius: 2,
-                opacity: count === 0 ? 0.3 : 0.7 + (count / maxCount) * 0.3,
-                minHeight: count === 0 ? 2 : 4,
-              }}
-            />
-          ))}
-        </div>
-      </RailCard>
-
     </div>
   );
 };
