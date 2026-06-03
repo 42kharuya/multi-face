@@ -76,7 +76,7 @@ const SideNav = () => {
   const subscribedCount = subscriptionRepository.getSubscribedFaceIds().length;
 
   const NAV_ITEMS: NavItem[] = [
-    { href: "/",             label: "Writing",      jp: "書く",    icon: (a) => <PencilIcon active={a} /> },
+    { href: "/",             label: "Home",         jp: "ホーム",  icon: (a) => <PencilIcon active={a} /> },
     { href: "/faces",        label: "Reflection",   jp: "振り返り", icon: (a) => <LayersIcon active={a} /> },
     { href: "/subscriptions",label: "Collection",   jp: "蒐集",    icon: (a) => <CompassIcon active={a} />, count: subscribedCount > 0 ? 3 : undefined },
     { href: "/notifications",label: "Notifications",jp: "通知",    icon: (a) => <BellIcon active={a} />, count: unreadNotifCount > 0 ? unreadNotifCount : undefined },

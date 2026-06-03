@@ -40,7 +40,7 @@ const CompassIcon = ({ active }: { active: boolean }) => (
 const NAV_ITEMS: NavItem[] = [
   {
     href: "/",
-    label: "Writing",
+    label: "Home",
     icon: (active) => <PencilIcon active={active} />,
   },
   {
