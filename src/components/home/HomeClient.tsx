@@ -9,7 +9,7 @@ import FaceFilterBar from "./FaceFilterBar";
 import ActivityFeed from "./ActivityFeed";
 import FaceChip from "@/components/ui/FaceChip";
 
-const REFERENCE_DATE = new Date("2026-04-01");
+const REFERENCE_DATE = new Date("2026-03-31");
 
 const HomeClient = () => {
   const [selectedFaceId, setSelectedFaceId] = useState<string | null>(null);

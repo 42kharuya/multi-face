@@ -14,7 +14,7 @@ import FaceChip from "./FaceChip";
 import RailCard from "./RailCard";
 import SeedRow from "./SeedRow";
 
-const REFERENCE_DATE = new Date("2026-04-01");
+const REFERENCE_DATE = new Date("2026-03-31");
 
 // ── WritingRail ────────────────────────────────────────────────
 const WritingRail = () => {
