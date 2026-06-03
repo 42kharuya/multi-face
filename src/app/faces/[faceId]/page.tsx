@@ -3,7 +3,6 @@ import Link from "next/link";
 import { faceRepository } from "@/repositories/face-repository";
 import { userRepository } from "@/repositories/user-repository";
 import FaceDetailClient from "@/components/face/FaceDetailClient";
-import FAB from "@/components/ui/FAB";
 
 type Props = {
   params: Promise<{ faceId: string }>;
@@ -81,9 +80,6 @@ const FaceDetailPage = async ({ params }: Props) => {
         />
       </main>
 
-      {face.userId === currentUser.id && (
-        <FAB defaultFaceId={face.id} />
-      )}
     </div>
   );
 };

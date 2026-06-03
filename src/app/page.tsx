@@ -1,6 +1,5 @@
 import HomeProfile from "@/components/home/HomeProfile";
 import HomeClient from "@/components/home/HomeClient";
-import FAB from "@/components/ui/FAB";
 
 export default function Home() {
   return (
@@ -9,7 +8,6 @@ export default function Home() {
         <HomeProfile />
         <HomeClient />
       </main>
-      <FAB />
     </div>
   );
 }

@@ -1,5 +1,4 @@
 import SubscriptionFeed from "@/components/subscriptions/SubscriptionFeed";
-import FAB from "@/components/ui/FAB";
 
 export default function SubscriptionsPage() {
   return (
@@ -7,7 +6,6 @@ export default function SubscriptionsPage() {
       <main>
         <SubscriptionFeed />
       </main>
-      <FAB />
     </div>
   );
 }
