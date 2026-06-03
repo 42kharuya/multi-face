@@ -94,7 +94,7 @@ const WritingRail = () => {
             { n: String(monthlyFaces), l: "フェイス" },
           ].map((s) => (
             <div key={s.l} style={{ textAlign: "center" }}>
-              <div style={{ fontSize: 22, fontWeight: 700, color: "var(--mf-brand)", fontFamily: "var(--mf-font-serif-en)" }}>
+              <div style={{ fontSize: 22, fontWeight: 700, color: "var(--mf-brand)", fontFamily: "var(--mf-font-sans)" }}>
                 {s.n}
               </div>
               <div style={{ fontSize: 11, color: "var(--mf-text-muted)", marginTop: 2 }}>{s.l}</div>
