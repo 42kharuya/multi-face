@@ -2,7 +2,6 @@
 
 import { type Face } from "@/types/face";
 import { activityRepository } from "@/repositories/activity-repository";
-import { useDetailPanel } from "@/lib/detail-panel-context";
 import SeedRow from "@/components/ui/SeedRow";
 import type { SortOrder } from "./FaceHeader";
 
@@ -12,7 +11,6 @@ type FaceActivityFeedProps = {
 };
 
 const FaceActivityFeed = ({ face, sortOrder = "newest" }: FaceActivityFeedProps) => {
-  const { openActivity } = useDetailPanel();
 
   let faceActivities = activityRepository.listByFaceId(face.id);
 
@@ -45,7 +43,6 @@ const FaceActivityFeed = ({ face, sortOrder = "newest" }: FaceActivityFeedProps)
           key={activity.id}
           activity={activity}
           face={face}
-          onClick={() => openActivity(activity.id)}
           noBorder={i === faceActivities.length - 1}
         />
       ))}

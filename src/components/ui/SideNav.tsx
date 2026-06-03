@@ -13,7 +13,6 @@ import { faceRepository } from "@/repositories/face-repository";
 import { userRepository } from "@/repositories/user-repository";
 import { notificationRepository } from "@/repositories/notification-repository";
 import { subscriptionRepository } from "@/repositories/subscription-repository";
-import { useDetailPanel } from "@/lib/detail-panel-context";
 import type { Face } from "@/types/face";
 
 type NavItem = {
@@ -70,7 +69,6 @@ const SideNav = () => {
 
   const currentUser = userRepository.getCurrentUser();
   const faces = faceRepository.listByUserId(currentUser.id);
-  const { openFace } = useDetailPanel();
 
   const unreadNotifCount = notificationRepository.listAll().filter(
     (n) => n.createdAt >= UNREAD_CUTOFF
@@ -90,7 +88,6 @@ const SideNav = () => {
 
   const handleFaceNavItemClick = (face: Face) => {
     router.push(`/faces/${face.id}`);
-    openFace(face.id);
   };
 
   return (
