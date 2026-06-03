@@ -56,13 +56,7 @@ const HomeClient = () => {
       </div>
 
       {/* インラインコンポーズ */}
-      <div
-        style={{
-          padding: "12px 18px 12px",
-          borderBottom: "0.5px solid var(--mf-line)",
-        }}
-        className="md:px-[28px]"
-      >
+      <div style={{ padding: "0 18px" }}>
         <button
           type="button"
           onClick={() => setIsModalOpen(true)}
@@ -72,7 +66,7 @@ const HomeClient = () => {
             alignItems: "center",
             gap: 10,
             padding: "10px 14px",
-            borderRadius: 14,
+            borderRadius: 16,
             background: "var(--mf-surface)",
             border: "0.5px solid var(--mf-line)",
             cursor: "pointer",
@@ -116,7 +110,7 @@ const HomeClient = () => {
         const yearsAgo = REFERENCE_DATE.getFullYear() - year;
         const mmdd = act.createdAt.slice(5, 10).replace("-", "/");
         return (
-          <div style={{ padding: "22px 28px 6px" }}>
+          <div style={{ padding: "22px 18px 6px" }}>
             {/* ヘッダー: アクセントライン + ON THIS DAY + N年前の今日 */}
             <div
               style={{
