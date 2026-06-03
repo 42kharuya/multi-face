@@ -56,25 +56,36 @@ const SubscriptionFeed = () => {
     <div>
       {/* ページタイトル */}
       <div style={{ padding: "4px 18px 14px" }}>
-        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
-          <div
-            style={{
-              fontSize: 22,
-              fontWeight: 700,
-              color: "var(--mf-brand)",
-              letterSpacing: -0.3,
-              fontFamily: "var(--mf-font-sans)",
-            }}
-          >
-            蒐集
+        <div
+          style={{
+            fontSize: 22,
+            fontWeight: 700,
+            color: "var(--mf-brand)",
+            letterSpacing: -0.3,
+            fontFamily: "var(--mf-font-sans)",
+            marginBottom: 12,
+          }}
+        >
+          収集
+        </div>
+        {/* 検索バー */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            padding: "10px 14px",
+            background: "var(--mf-surface)",
+            borderRadius: 12,
+            border: "0.5px solid var(--mf-line)",
+          }}
+        >
+          <svg width={16} height={16} viewBox="0 0 18 18" fill="none" stroke="var(--mf-text-muted)" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+            <circle cx={8} cy={8} r={5.5} /><path d="M12.2 12.2L16 16" />
+          </svg>
+          <div style={{ flex: 1, color: "var(--mf-text-muted)", fontSize: 13, fontFamily: "var(--mf-font-sans)" }}>
+            フェイス・シードを検索
           </div>
-          {subscribedFaces.length === 0 ? (
-            <div style={{ fontSize: 12, color: "var(--mf-text-sub)" }}>気になるフェイスを見つける</div>
-          ) : (
-            <svg width={18} height={18} viewBox="0 0 18 18" fill="none" stroke="var(--mf-brand)" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
-              <circle cx={8} cy={8} r={5.5} /><path d="M12.2 12.2L16 16" />
-            </svg>
-          )}
         </div>
       </div>
 
