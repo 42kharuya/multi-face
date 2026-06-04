@@ -12,7 +12,6 @@ import type { Face } from "@/types/face";
 import FaceBadge from "./FaceBadge";
 import FaceChip from "./FaceChip";
 import RailCard from "./RailCard";
-import SeedRow from "./SeedRow";
 
 const REFERENCE_DATE = new Date("2026-03-31");
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import Wordmark from "@/components/ui/Wordmark";
 import AccountMenu from "@/components/ui/AccountMenu";
@@ -71,10 +72,12 @@ const AppHeader = () => {
               padding: 0,
             }}
           >
-            <img
+            <Image
               src={user.avatarUrl}
               alt={user.name}
-              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+              width={30}
+              height={30}
+              style={{ objectFit: "cover", display: "block" }}
             />
           </button>
         </div>
