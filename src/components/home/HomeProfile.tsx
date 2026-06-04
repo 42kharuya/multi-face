@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { userRepository } from "@/repositories/user-repository";
 import { faceRepository } from "@/repositories/face-repository";
 import { activityRepository } from "@/repositories/activity-repository";
@@ -13,10 +14,12 @@ const HomeProfile = () => {
       {/* アバター・名前 */}
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         <div style={{ width: 44, height: 44, borderRadius: "50%", overflow: "hidden", flexShrink: 0 }}>
-          <img
+          <Image
             src={user.avatarUrl}
             alt={user.name}
-            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+            width={44}
+            height={44}
+            style={{ objectFit: "cover", display: "block" }}
           />
         </div>
         <div>

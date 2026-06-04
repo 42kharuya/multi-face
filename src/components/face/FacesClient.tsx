@@ -78,11 +78,6 @@ const FacesClient = ({ initialFaces }: Props) => {
     name: "名前順",
   };
 
-  const totalSeeds = useMemo(
-    () => Array.from(faceStats.values()).reduce((sum, s) => sum + s.total, 0),
-    [faceStats]
-  );
-
   const faceMap = useMemo(() => createLookupMap(faces, (f) => f.id), [faces]);
   const userMap = useMemo(() => createLookupMap(userRepository.listAll(), (u) => u.id), []);
 
@@ -398,7 +393,6 @@ const FacesClient = ({ initialFaces }: Props) => {
         >
           {filteredFaces.map((face) => {
             const color = getFaceColor(face.id);
-            const kanji = getFaceKanji(getFaceTitle(face));
             const stats = faceStats.get(face.id);
             return (
               <Link

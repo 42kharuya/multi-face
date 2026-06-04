@@ -7,7 +7,7 @@ import { faceRepository } from "@/repositories/face-repository";
 import { activityRepository } from "@/repositories/activity-repository";
 import { type Notification } from "@/types/notification";
 import { formatRelativeTime } from "@/lib/format-relative-time";
-import { createLookupMap, getFaceTitle, getFaceColor } from "@/lib/display";
+import { createLookupMap, getFaceTitle } from "@/lib/display";
 import FaceBadge from "@/components/ui/FaceBadge";
 import DateBar from "@/components/ui/DateBar";
 
@@ -32,7 +32,7 @@ type NotifItemProps = {
   activityId?: string;
 };
 
-const NotifItem = ({ notification, faceName, faceId, faceImageUrl, handle, preview, activityId }: NotifItemProps) => {
+const NotifItem = ({ notification, faceName, faceId, faceImageUrl, handle, preview }: NotifItemProps) => {
   const isUnread = notification.createdAt >= UNREAD_CUTOFF;
   const isLink = notification.type === "link";
 

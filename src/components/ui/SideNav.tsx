@@ -1,18 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import Wordmark from "@/components/ui/Wordmark";
-import FaceBadge from "@/components/ui/FaceBadge";
 import FaceNavItem from "@/components/ui/FaceNavItem";
 import AccountMenu from "@/components/ui/AccountMenu";
 import CreateFaceModal from "@/components/face/CreateFaceModal";
 import PostModal from "@/components/ui/PostModal";
 import { faceRepository } from "@/repositories/face-repository";
 import { userRepository } from "@/repositories/user-repository";
-import { notificationRepository } from "@/repositories/notification-repository";
-import { subscriptionRepository } from "@/repositories/subscription-repository";
 import type { Face } from "@/types/face";
 
 type NavItem = {
@@ -20,10 +18,7 @@ type NavItem = {
   label: string;
   jp: string;
   icon: (active: boolean) => React.ReactNode;
-  count?: number;
 };
-
-const UNREAD_CUTOFF = "2026-03-25";
 
 const HomeIcon = ({ active }: { active: boolean }) => (
   <svg width={22} height={22} viewBox="0 0 22 22" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
@@ -68,16 +63,11 @@ const SideNav = () => {
   const currentUser = userRepository.getCurrentUser();
   const faces = faceRepository.listByUserId(currentUser.id);
 
-  const unreadNotifCount = notificationRepository.listAll().filter(
-    (n) => n.createdAt >= UNREAD_CUTOFF
-  ).length;
-  const subscribedCount = subscriptionRepository.getSubscribedFaceIds().length;
-
   const NAV_ITEMS: NavItem[] = [
     { href: "/",             label: "Home",         jp: "ホーム",  icon: (a) => <HomeIcon active={a} /> },
     { href: "/faces",        label: "Reflection",   jp: "振り返り", icon: (a) => <LayersIcon active={a} /> },
-    { href: "/subscriptions",label: "Collection",   jp: "蒐集",    icon: (a) => <CompassIcon active={a} />, count: subscribedCount > 0 ? 3 : undefined },
-    { href: "/notifications",label: "Notifications",jp: "通知",    icon: (a) => <BellIcon active={a} />, count: unreadNotifCount > 0 ? unreadNotifCount : undefined },
+    { href: "/subscriptions",label: "Collection",   jp: "蒐集",    icon: (a) => <CompassIcon active={a} /> },
+    { href: "/notifications",label: "Notifications",jp: "通知",    icon: (a) => <BellIcon active={a} /> },
   ];
 
   const activeFaceId = pathname.startsWith("/faces/")
@@ -149,25 +139,6 @@ const SideNav = () => {
                     {item.label}
                   </div>
                 </div>
-                {item.count && item.count > 0 ? (
-                  <div
-                    style={{
-                      minWidth: 18,
-                      height: 18,
-                      padding: "0 6px",
-                      borderRadius: 999,
-                      background: "var(--mf-accent)",
-                      color: "#fff",
-                      fontSize: 10.5,
-                      fontWeight: 700,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    {item.count}
-                  </div>
-                ) : null}
               </Link>
             );
           })}
@@ -273,10 +244,12 @@ const SideNav = () => {
           }}
         >
           <div style={{ width: 44, height: 44, borderRadius: "50%", overflow: "hidden", flexShrink: 0 }}>
-            <img
+            <Image
               src={currentUser.avatarUrl}
               alt={currentUser.name}
-              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+              width={44}
+              height={44}
+              style={{ objectFit: "cover", display: "block" }}
             />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
